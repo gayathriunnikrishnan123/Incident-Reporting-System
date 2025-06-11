@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Departments</title>
+</head>
+<body>
+    <h1>Department Management</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add Department</button>
+    </form>
+
+    <h2>Existing Departments</h2>
+    <ul>
+        {% for dept in departments %}
+            <li>{{ dept.name }} - {{ dept.description }}</li>
+        {% empty %}
+            <li>No departments added yet.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

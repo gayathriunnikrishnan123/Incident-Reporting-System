@@ -1,0 +1,25 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Divisions</title>
+</head>
+<body>
+    <h1>Division Management</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add Division</button>
+    </form>
+
+    <h2>Existing Divisions</h2>
+    <ul>
+        {% for div in divisions %}
+            <li>{{ div.name }} ({{ div.department.name }}) - {{ div.description }}</li>
+        {% empty %}
+            <li>No divisions added yet.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
