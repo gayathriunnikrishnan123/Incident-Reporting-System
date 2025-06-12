@@ -28,5 +28,6 @@ urlpatterns = [
     path('edit-user/<int:userId>/',editUserView,name='edit-user'),
     path('delete-user/<int:userId>/',deleteUserView,name='delete-user'),
     path('all-users/',userListView,name='show-users'),
+    path('admin_dashboard/',views.admin_dashboard,name='admin_dashboard'),
 
 ]

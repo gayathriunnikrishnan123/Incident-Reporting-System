@@ -118,6 +118,9 @@ def home(request):
 def dashboard(request):
     return render(request,'dashboard.html')
 
+def admin_dashboard(request):
+    return render(request, 'admin.html')
+
 def email_login_view(request):
     if request.method == "POST":
         form = EmailLoginForm(request.POST)
