@@ -1,8 +1,8 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from accounts.forms import UserCreationForm
+from accounts.forms import UserCreationForm, InternalUserEditForm
 from accounts.models import CustomUserProfile
 
 # Create your views here.
@@ -33,13 +33,14 @@ def createUserView(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
+            data = form.cleaned_data
             CustomUserProfile.objects.create_user(
-                email=form.cleaned_data["email"],
-                password=form.cleaned_data["password"],
-                fullname=form.cleaned_data["fullname"],
-                phone=form.cleaned_data["phone"],
-                default_department=form.cleaned_data["default_department"],
-                default_division=form.cleaned_data["default_division"],
+                email=data["email"],
+                password=data["password"],
+                fullname=data["fullname"],
+                phone=data["phone"],
+                default_department=data["default_department"],
+                default_division=data["default_division"],
             )
             messages.success(request, "User created successfully.")
             return redirect("show-users")
@@ -51,31 +52,40 @@ def createUserView(request):
 
 @login_required
 def editUserView(request, userId):
-    userData = CustomUserProfile.objects.get(id=userId)
+    userData = get_object_or_404(CustomUserProfile, id=userId)
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = InternalUserEditForm(request.POST)
         if form.is_valid():
-            dataFromForm = form.changed_data
-            userData.email = dataFromForm["email"]
-            userData.fullname = dataFromForm["fullname"]
-            userData.phone=dataFromForm['phone']
-            userData.password=dataFromForm['password']
-            userData.default_department=dataFromForm['default_department']
-            userData.default_division=dataFromForm['default_division']
-            userData.save()
-            print("user data updated")
-            return redirect("create-user")
+            data = form.cleaned_data
+            
+            email_exists = CustomUserProfile.objects.filter(email=data['email']).exclude(id=userId).exists()
+            phone_exists = CustomUserProfile.objects.filter(phone=data['phone']).exclude(id=userId).exists()
+
+            if email_exists:
+                form.add_error('email', 'Email already exists.')
+            if phone_exists:
+                form.add_error('phone', 'Phone number already exists.')
+
+            if not form.errors:
+                userData.fullname=data['fullname']
+                userData.email=data['email']
+                userData.phone=data['phone']
+                userData.default_department = data['default_department']
+                userData.default_division = data['default_division']
+                userData.save()
+                # messages.success(request, "User updated successfully.")
+                print("user data updated")
+                return redirect("show-users")
     else:
-        form=UserCreationForm(initial={
-            "email": userData.email,
-            "fullname": userData.fullname,
-            "phone": userData.phone,
-            "password": userData.password,
-            "default_department": userData.default_department,
-            "default_division": userData.default_division,
+        form = InternalUserEditForm(initial={
+            'fullname': userData.fullname,
+            'email': userData.email,
+            'phone': userData.phone,
+            'default_department': userData.default_department,
+            'default_division': userData.default_division,
         })
 
-    return render(request,"create_user.html", {"form": form})
+    return render(request,"edit_user.html", {"form": form})
 
 
 

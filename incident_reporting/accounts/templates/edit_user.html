@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New User | SK</title>
+    <title>Edit User | SK</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/user_form.css' %}">
 </head>
@@ -16,7 +16,7 @@
 
         <div class="form-header">
             <div class="form-icon"></div>
-            <h1 class="form-title">Create new user</h1>
+            <h1 class="form-title">Edit user</h1>
             {% comment %} <p class="form-subtitle">create </p> {% endcomment %}
         </div>
 
@@ -64,33 +64,6 @@
             </div>
 
 
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-                    {{ form.password }}
-                    {% if form.password.errors %}
-                        {% for error in form.password.errors %}
-                            <div class="error-message">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ form.confirm_password.id_for_label }}" class="form-label">Confirm Password</label>
-                    {{ form.confirm_password }}
-                    {% if form.confirm_password.errors %}
-                        {% for error in form.confirm_password.errors %}
-                            <div class="error-message">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
-                    <div class="error-message" id="confirm-password-error"></div>
-                </div>
-            </div>
-
-
-
-
             <div class="form-group">
                 <label for="{{ form.default_department.id_for_label }}" class="form-label">Department</label>
                 {{ form.default_department }}
@@ -112,10 +85,7 @@
             </div>
 
             <button type="submit" class="submit-btn">
-                Create user
-            </button>
-            <button type="reset" class="reset-btn">
-                reset
+                Update user
             </button>
         </form>
     </div>
