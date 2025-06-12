@@ -4,7 +4,7 @@
 <head>
     <title>Manage Department</title>
     <link rel="stylesheet" href="{% static 'css/department.css' %}">
-    
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
 <body>
 
@@ -29,26 +29,44 @@
 
     <div class="table-container">
         <h3>Existing Departments</h3>
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-            {% for dept in departments %}
+        <table id="departmentTable" class="display">
+            <thead>
                 <tr>
-                    <td>{{ dept.name }}</td>
-                    <td>{{ dept.description }}</td>
-                    <td class="action-buttons">
-                        <a href="{% url 'edit_department' dept.id %}" class="edit">Edit</a>
-                        <a href="{% url 'delete_department' dept.id %}" class="delete">Delete</a>
-                    </td>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
                 </tr>
-            {% empty %}
-                <tr><td colspan="3">No departments found.</td></tr>
-            {% endfor %}
+            </thead>
+            <tbody>
+                {% for dept in departments %}
+                    <tr>
+                        <td>{{ dept.name }}</td>
+                        <td>{{ dept.description }}</td>
+                        <td class="action-buttons">
+                            <a href="{% url 'edit_department' dept.id %}" class="edit">Edit</a>
+                            <a href="{% url 'delete_department' dept.id %}" class="delete">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3">No departments found.</td></tr>
+                {% endfor %}
+            </tbody>
         </table>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#departmentTable').DataTable({
+                pageLength: 5,
+                lengthMenu: [5, 10, 25, 50],
+                ordering: true,
+                searching: true,
+                paging: true
+            });
+        });
+    </script>
 
 </body>
 </html>

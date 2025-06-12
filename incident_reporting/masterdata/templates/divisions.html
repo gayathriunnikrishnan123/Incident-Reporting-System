@@ -4,6 +4,7 @@
 <head>
     <title>Manage Divisions</title>
     <link rel="stylesheet" href="{% static 'css/divisions.css' %}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
 <body>
 
@@ -29,7 +30,7 @@
 
 <div class="table-container">
     <h3>Existing Divisions</h3>
-    <table>
+    <table id="divisionTable" class="display">
         <thead>
             <tr>
                 <th>#</th>
@@ -62,6 +63,21 @@
         </tbody>
     </table>
 </div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#divisionTable').DataTable({
+            pageLength: 5,
+            lengthMenu: [5, 10, 25, 50],
+            ordering: true,
+            searching: true,
+            paging: true
+        });
+    });
+</script>
 
 </body>
 </html>

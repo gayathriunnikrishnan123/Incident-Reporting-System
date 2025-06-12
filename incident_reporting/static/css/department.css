@@ -2,14 +2,14 @@
 body {
     font-family: Arial, sans-serif;
     /*background: linear-gradient(to right, #f7f7f7, #e0f7fa);*/
-    background: #a2c0ed;
+    background: #f5f6f9;
     margin: 0;
     padding: 20px;
 }
 
 /* Form Section */
 .form-container {
-    background-color: #b8eef0;
+    background-color: #caf3f5;
     padding: 30px 40px;
     border-radius: 10px;
     width: 500px;

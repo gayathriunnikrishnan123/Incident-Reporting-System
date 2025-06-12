@@ -1,12 +1,8 @@
 from django.shortcuts import render, redirect
 from .models import Department, Division
 from .forms import DepartmentForm, DivisionForm
-from django.contrib.auth.decorators import user_passes_test
 
-# def is_admin(user):
-#     return user.is_superuser or user.groups.filter(name='Admin').exists()
 
-#@user_passes_test(is_admin)
 def manage_departments(request):
     departments = Department.objects.all()
     form = DepartmentForm()
@@ -48,7 +44,7 @@ def delete_department(request, pk):
     department.delete()
     return redirect('manage_departments')
 
-#@user_passes_test(is_admin)
+
 def manage_divisions(request):
     divisions = Division.objects.select_related('department').all()
     form = DivisionForm()
