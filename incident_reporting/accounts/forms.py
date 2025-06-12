@@ -87,3 +87,11 @@ class InternalUserEditForm(forms.Form):
     is_active = forms.BooleanField(required=False)
     is_staff = forms.BooleanField(required=False)
     is_admin = forms.BooleanField(required=False)
+
+
+class EmailLoginForm(forms.Form):
+    email = forms.EmailField(label="Email", max_length=254)
+    password = forms.CharField(label="Password", widget=forms.PasswordInput)
+
+
+
