@@ -2,23 +2,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Manage Departments</title>
+    <title>Manage Department</title>
+    <link rel="stylesheet" href="{% static 'css/department.css' %}">
+    
 </head>
 <body>
-    <h1>Department Management</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Add Department</button>
-    </form>
 
-    <h2>Existing Departments</h2>
-    <ul>
-        {% for dept in departments %}
-            <li>{{ dept.name }} - {{ dept.description }}</li>
-        {% empty %}
-            <li>No departments added yet.</li>
-        {% endfor %}
-    </ul>
+    <div class="form-container">
+        <h2>Manage Department</h2>
+        <form method="post">
+            {% csrf_token %}
+            <label for="id_name">Department Name</label>
+            {{ form.name }}
+
+            <label for="id_description">Description</label>
+            {{ form.description }}
+
+            <div class="button-group">
+                <button type="submit" class="create-btn">
+                    {% if edit_mode %}Update{% else %}Create{% endif %} Department
+                </button>
+                <button type="reset" class="reset-btn">Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <h3>Existing Departments</h3>
+        <table>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+            {% for dept in departments %}
+                <tr>
+                    <td>{{ dept.name }}</td>
+                    <td>{{ dept.description }}</td>
+                    <td class="action-buttons">
+                        <a href="{% url 'edit_department' dept.id %}" class="edit">Edit</a>
+                        <a href="{% url 'delete_department' dept.id %}" class="delete">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="3">No departments found.</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+
 </body>
 </html>

@@ -15,4 +15,4 @@ class Division(models.Model):
     description = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.department.name} - {self.name}"
+        return self.name
