@@ -1,0 +1,40 @@
+{% load static %}
+<link rel ="stylesheet" href="{% static 'css/styles.css' %}">
+<link rel ="stylesheet" href="{% static 'css/responsive.css' %}">
+
+<header> 
+<div class="main-content">
+           
+    <!-- Admin Header Card -->
+            <div class="admin-header-card" id="adminHeaderCard">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+                <div class="admin-greeting">
+                    Hello Admin
+                    <span class="greeting-emoji">👋</span>
+                </div>
+                
+                <div class="user-profile" id="userProfile">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-name">Admin</div>
+                    <div class="dropdown-arrow">▼</div>
+                    
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="#" class="dropdown-item">
+                            <i>👤</i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i>🔑</i>
+                            <span>Change Password</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item">
+                            <i>🚪</i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </header>
