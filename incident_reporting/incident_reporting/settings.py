@@ -77,12 +77,12 @@ WSGI_APPLICATION = 'incident_reporting.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'Incident_reporting',
-        'USER': 'postgres',
-        'PASSWORD': 'Postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'NAME': 'Incident_reporting',
+        # 'USER': 'postgres',
+        # 'PASSWORD': 'Postgres',
+        # 'HOST': 'localhost',
+        # 'PORT': '5432',
     }
 }
 
