@@ -1,0 +1,25 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Masterdata - Dashboard{% endblock %}
+{% block page_title %}Master Data{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">🏛️</div>
+        </div>
+        <div class="stat-value"><a href="{% url 'manage_departments' %}">Departments</a></div>
+        <div class="stat-change positive">Manage department deatils</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">🏦</div>
+        </div>
+        <div class="stat-value"><a href="{% url 'manage_divisions' %}">Divisions</a></div>
+        <div class="stat-change positive">Manage division deatils under department</div>
+    </div>
+</div>
+
+{% endblock %}

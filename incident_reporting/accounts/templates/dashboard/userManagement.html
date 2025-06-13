@@ -1,0 +1,25 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}UserManager - Dashboard{% endblock %}
+{% block page_title %}User Master{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">👥</div>
+        </div>
+        <div class="stat-value"><a href="{% url 'show-users' %}">Users</a></div>
+        <div class="stat-change positive">Show all internal user details</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">👤</div>
+        </div>
+        <div class="stat-value"><a href="{% url 'create-user' %}">Create user</a></div>
+        <div class="stat-change positive">Add new internal user to the system</div>
+    </div>
+</div>
+
+{% endblock %}

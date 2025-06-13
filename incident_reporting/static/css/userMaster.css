@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Mulish:ital,wght@0,200..1000;1,200..1000&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+.table-wrapper {
+    width: 100%;
+    padding: 20px;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+
+table.dataTable {
+    width: 100% !important;
+    border-collapse: collapse;
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+    background-color: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+
+table.dataTable thead {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+}
+
+table.dataTable thead th {
+    padding: 12px;
+    text-align: left !;
+    font-weight: 500 !important; 
+}
+
+
+table.dataTable tbody td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+
+table.dataTable tbody tr:hover {
+    background-color: #f4f6fa;
+}
+
+
+.action-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    text-decoration: none;
+}
+
+.new-btn{
+    font-family: "Poppins", sans-serif;
+    background-color: #3182ce;
+    color: #fff;
+}
+
+.edit-btn {
+    background-color: #3182ce;
+    color: #fff;
+    text-decoration: none;
+}
+
+.delete-btn {
+    background-color: #e53e3e;
+    color: #fff;
+    text-decoration: none;
+}
+
+.action-btn:hover {
+    opacity: 0.9;
+}
+
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    font-family: "Poppins", sans-serif;
+    padding: 6px 10px !important;
+    margin: 0 2px !important;
+    border-radius: 4px !important;
+    background: #edf2f7 !important;
+    border: 1px solid #ccc !important;
+    color: #333 !important;
+    cursor: pointer !important;
+    font-size: 12px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #667eea;
+    color: white !important;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 10px;
+}
+
+/* Responsive one */
+@media screen and (max-width: 768px) {
+    .action-btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 6px;
+    }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        text-align: left;
+    }
+
+    table.dataTable tbody td {
+        word-break: break-word;
+    }
+}
