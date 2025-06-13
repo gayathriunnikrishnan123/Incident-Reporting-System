@@ -1,4 +1,31 @@
-# Virtual environment
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+env/
 venv/
 ENV/
-env/
+.venv/
+.env/
+
+# SQLite DB
+db.sqlite3
+
+# IDE Files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Log files
+*.log
+
+# Media / Static
+media/
+staticfiles/
