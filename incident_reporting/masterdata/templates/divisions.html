@@ -1,12 +1,18 @@
+{% extends 'dashboard/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Manage Divisions</title>
+
+{% block title %}Divisions{% endblock %}
+{% block page_title %}Division Master{% endblock %}
+
+{% block headersPart %}
     <link rel="stylesheet" href="{% static 'css/divisions.css' %}">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-</head>
-<body>
+{% endblock headersPart %}
+
+
+
+{% block content %}
+
 
 <div class="form-container">
     <h2>Division Management</h2>
@@ -33,7 +39,7 @@
     <table id="divisionTable" class="display">
         <thead>
             <tr>
-                <th>#</th>
+                <th>No</th>
                 <th>Division Name</th>
                 <th>Description</th>
                 <th>Department</th>
@@ -64,20 +70,25 @@
     </table>
 </div>
 
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script>
-    $(document).ready(function () {
-        $('#divisionTable').DataTable({
-            pageLength: 5,
-            lengthMenu: [5, 10, 25, 50],
-            ordering: true,
-            searching: true,
-            paging: true
-        });
-    });
-</script>
 
-</body>
-</html>
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#divisionTable').DataTable({
+                pageLength: 5,
+                lengthMenu: [5, 10, 25, 50],
+                ordering: true,
+                searching: true,
+                paging: true
+            });
+        });
+    </script>
+
+{% endblock %}

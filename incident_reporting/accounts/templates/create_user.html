@@ -1,17 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New User | SK</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/user_form.css' %}">
-</head>
-<body>
-    <div class="controls">
-        <a href="{% url "show-users"%}"class="action-btn all-btn">All users</a>
-    </div>
+{% extends 'dashboard/base.html' %}
+{% load static %}
 
+{% block title %}Add new user{% endblock %}
+{% block page_title %}Create user{% endblock %}
+
+{% block headersPart %}
+    <link rel="stylesheet" href="{% static 'css/user_form.css' %}">
+{% endblock headersPart %}
+
+
+
+{% block content %}
+
+
+<div class="mainCont">
     <div class="form-container">
 
         <div class="form-header">
@@ -119,7 +121,11 @@
             </button>
         </form>
     </div>
+</div>
+
 
     {% comment %} <script src="{% static 'js/user_form.js' %}"></script> {% endcomment %}
-</body>
-</html>
+
+
+{% endblock %}
+
