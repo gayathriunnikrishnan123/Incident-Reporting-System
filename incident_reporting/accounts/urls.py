@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
-from accounts.views import dashboardView, createUserView, editUserView, userListView, deleteUserView, systemConfigView, userManagementView, roleView, editRoleView, deleteRoleView
+from accounts.views import dashboardView, createUserView, editUserView, userListView, deleteUserView, systemConfigView, userManagementView, roleView, editRoleView, deleteRoleView,auditLogView
 from django.contrib.auth.views import LoginView, LogoutView
 from accounts.forms import CustomEmailLoginForm
 
@@ -20,4 +20,7 @@ urlpatterns = [
     path('roles/',roleView,name='show-roles'),
     path('edit-role/<int:roleId>/',editRoleView,name='edit-role'),
     path('delete-role/<int:roleId>/',deleteRoleView,name='delete-role'),
+
+
+    path('auditlog/',auditLogView,name='auditlog')
 ]

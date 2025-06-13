@@ -3,7 +3,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from accounts.forms import UserCreationForm, InternalUserEditForm, RoleCreationForm
-from accounts.models import CustomUserProfile, Role
+from accounts.models import CustomUserProfile, Role, AuditLog
+from accounts.decorators import audit_trail_decorator
 
 
 # Create your views here.
@@ -28,17 +29,27 @@ from accounts.models import CustomUserProfile, Role
 
 
 @login_required
+@audit_trail_decorator
 def dashboardView(request):
     return render(request,'dashboard/dashboard.html')
 
 
 @login_required
+@audit_trail_decorator
 def systemConfigView(request):
     return render(request,'dashboard/systemConfig.html')
 
 @login_required
+@audit_trail_decorator
 def userManagementView(request):
     return render(request,'dashboard/userManagement.html')
+
+
+@login_required
+@audit_trail_decorator
+def auditLogView(request):
+    logs=AuditLog.objects.all()
+    return render(request,'dashboard/auditlog.html',{'logs':logs})
 
 
 
@@ -47,6 +58,7 @@ def userManagementView(request):
 
 
 @login_required
+@audit_trail_decorator
 def createUserView(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
@@ -69,6 +81,7 @@ def createUserView(request):
 
 
 @login_required
+@audit_trail_decorator
 def editUserView(request, userId):
     userData = get_object_or_404(CustomUserProfile, id=userId)
     if request.method == "POST":
@@ -108,6 +121,7 @@ def editUserView(request, userId):
 
 
 @login_required
+@audit_trail_decorator
 def deleteUserView(request, userId):
     userData = CustomUserProfile.objects.get(id=userId)
     userData.delete()
@@ -116,6 +130,7 @@ def deleteUserView(request, userId):
 
 
 @login_required
+@audit_trail_decorator
 def userListView(request):
     allUsers = CustomUserProfile.objects.all()
     return render(request, 'userMaster.html', {'users': allUsers})
@@ -123,6 +138,7 @@ def userListView(request):
 
 
 @login_required
+@audit_trail_decorator
 def roleView(request):
     allRoles=Role.objects.all()
     if request.method=='POST':
@@ -136,7 +152,8 @@ def roleView(request):
 
 
 
-
+@login_required
+@audit_trail_decorator
 def editRoleView(request, roleId):
     role = get_object_or_404(Role,id=roleId)
     allRoles = Role.objects.all()
@@ -152,6 +169,7 @@ def editRoleView(request, roleId):
 
 
 @login_required
+@audit_trail_decorator
 def deleteRoleView(request, roleId):
     role = Role.objects.get(id=roleId)
     role.delete()

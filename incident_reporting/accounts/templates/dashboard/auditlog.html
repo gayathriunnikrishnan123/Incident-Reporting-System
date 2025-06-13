@@ -1,0 +1,86 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Audit log{% endblock %}
+{% block page_title %}Tracker{% endblock %}
+
+{% block headersPart %}
+    <link rel="stylesheet" href="{% static 'css/user_form.css' %}">
+
+    <link rel="stylesheet" href="{% static "css/userMaster.css" %}">
+
+        <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+    <!-- jQuery (Required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+{% endblock headersPart %}
+
+
+
+{% block content %}
+
+
+<div class="mainCont">
+    <div class="table-wrapper">
+        <table id="userTable" class="display responsive nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>User</th>
+                    <th>Function</th>
+                    <th>Action</th>
+                    <th>Path</th>
+                    <th>Description</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ log.user_email }}</td>
+                    <td>{{ log.function_name }}</td>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.path }}</td>
+                    <td>{{ log.message }}</td>
+                    <td>{{ log.timestamp }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+
+    {% comment %} <script src="{% static 'js/user_form.js' %}"></script> {% endcomment %}
+
+
+{% endblock %}
+
+{% block extra_js %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#userTable').DataTable({
+                responsive: true,
+                pageLength: 25,
+                lengthMenu: [3, 10, 25, 50],
+                lengthChange: true,
+                searching: true,
+                ordering: true
+            });
+        });
+    </script>
+
+
+{% endblock extra_js %}
