@@ -52,7 +52,7 @@ class Role(models.Model):
 
 class DepartmentProfile(models.Model):
     user = models.ForeignKey(CustomUserProfile, on_delete=models.CASCADE)
-    division = models.ForeignKey(Division, on_delete=models.PROTECT)
+    division = models.ForeignKey(Division, on_delete=models.PROTECT, null=True, blank=True)
     department = models.ForeignKey(
         Department, on_delete=models.PROTECT, null=True, blank=True
     )
@@ -63,3 +63,18 @@ class DepartmentProfile(models.Model):
         db_table = "Department_Profile"
 
     
+
+
+
+
+class AuditLog(models.Model):
+    user_email = models.EmailField(null=True, blank=True)
+    function_name = models.CharField(max_length=100)
+    action = models.CharField(max_length=100)
+    path = models.CharField(max_length=100)
+    message = models.TextField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "Audit_Log"
+        ordering = ['-timestamp']
