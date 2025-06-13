@@ -89,12 +89,6 @@ class InternalUserEditForm(forms.Form):
     is_admin = forms.BooleanField(required=False)
 
 
-class EmailLoginForm(forms.Form):
-    email = forms.EmailField(label="Email", max_length=254)
-    password = forms.CharField(label="Password", widget=forms.PasswordInput)
-
-
-
 
 class CustomEmailLoginForm(AuthenticationForm):
     username=forms.EmailField(

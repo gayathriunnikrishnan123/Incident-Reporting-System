@@ -1,3 +1,6 @@
+from django.shortcuts import render
+
+# Create your views here.
 from django.shortcuts import render, redirect
 from .models import Department, Division
 from .forms import DepartmentForm, DivisionForm
