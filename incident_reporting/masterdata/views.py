@@ -1,8 +1,6 @@
 from django.shortcuts import render
 
 # Create your views here.
-<<<<<<< HEAD
-=======
 from django.shortcuts import render, redirect
 from .models import Department, Division
 from .forms import DepartmentForm, DivisionForm
@@ -90,4 +88,4 @@ def delete_division(request, pk):
     division = Division.objects.get(pk=pk)
     division.delete()
     return redirect('manage_divisions')
->>>>>>> sk
+
