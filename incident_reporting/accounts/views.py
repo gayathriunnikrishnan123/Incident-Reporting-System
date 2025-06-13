@@ -29,7 +29,21 @@ from accounts.models import CustomUserProfile
 
 @login_required
 def dashboardView(request):
-    return render(request,'admin_dashboard.html')
+    return render(request,'dashboard/dashboard.html')
+
+
+@login_required
+def systemConfigView(request):
+    return render(request,'dashboard/systemConfig.html')
+
+@login_required
+def userManagementView(request):
+    return render(request,'dashboard/userManagement.html')
+
+
+
+
+
 
 
 @login_required

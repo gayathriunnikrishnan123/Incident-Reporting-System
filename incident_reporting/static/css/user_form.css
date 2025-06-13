@@ -8,11 +8,11 @@
     box-sizing: border-box;
 }
 
-body {
+.mainCont {
     font-family: "Poppins", sans-serif;
 
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    background-image: url("../images/bgwall.jpg");
+    /* background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); */
+    /* background-image: url("../images/bgwall.jpg"); */
     background-position: center;
     background-size: cover;
     min-height: 100vh;

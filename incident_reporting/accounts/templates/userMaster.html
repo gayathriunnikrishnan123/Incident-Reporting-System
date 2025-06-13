@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Users | SK</title>
-    {% load static %}
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}All users{% endblock %}
+{% block page_title %}All Users{% endblock %}
+
+{% block headersPart %}
     <link rel="stylesheet" href="{% static "css/userMaster.css" %}">
 
         <!-- DataTables CSS -->
@@ -17,9 +17,13 @@
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+{% endblock headersPart %}
 
-</head>
-<body>
+
+
+{% block content %}
+
+
     <div class="controls">
         <a href="{% url "create-user"%}"class="action-btn new-btn">Add new user</a>
     </div>
@@ -62,6 +66,16 @@
 
 
     {% comment %} <script src="{% static 'js/userMaster.js' %}"></script> {% endcomment %}
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
     <script>
         $(document).ready(function () {
             $('#userTable').DataTable({
@@ -73,5 +87,6 @@
             });
         });
     </script>
-</body>
-</html>
+
+
+{% endblock %}

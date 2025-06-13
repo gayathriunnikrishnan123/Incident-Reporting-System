@@ -1,12 +1,18 @@
+{% extends 'dashboard/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Manage Department</title>
+
+{% block title %}Departments{% endblock %}
+{% block page_title %}Department Master{% endblock %}
+
+{% block headersPart %}
     <link rel="stylesheet" href="{% static 'css/department.css' %}">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-</head>
-<body>
+{% endblock headersPart %}
+
+
+
+{% block content %}
+
 
     <div class="form-container">
         <h2>Manage Department</h2>
@@ -32,6 +38,7 @@
         <table id="departmentTable" class="display">
             <thead>
                 <tr>
+                    <th>No</th>
                     <th>Name</th>
                     <th>Description</th>
                     <th>Actions</th>
@@ -40,6 +47,7 @@
             <tbody>
                 {% for dept in departments %}
                     <tr>
+                        <td>{{ forloop.counter }}</td>
                         <td>{{ dept.name }}</td>
                         <td>{{ dept.description }}</td>
                         <td class="action-buttons">
@@ -53,6 +61,13 @@
             </tbody>
         </table>
     </div>
+
+
+{% endblock %}
+
+
+
+{% block extra_js %}
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -68,5 +83,4 @@
         });
     </script>
 
-</body>
-</html>
+{% endblock %}
