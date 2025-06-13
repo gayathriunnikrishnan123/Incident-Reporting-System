@@ -58,13 +58,7 @@ ROOT_URLCONF = 'incident_reporting.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-<<<<<<< HEAD
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),
-                 os.path.join(BASE_DIR, 'accounts/templates'),
-                 ],
-=======
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
->>>>>>> dcf5a2028d67b2022efaf0a63aa7480fcdaf5847
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,10 +79,10 @@ WSGI_APPLICATION = 'incident_reporting.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'incident_reporting',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'Incident_reporting',
         'USER':'postgres',
-        'PASSWORD':'1234',
+        'PASSWORD':'Postgres',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -141,7 +135,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'accounts.CustomUserProfile'
-<<<<<<< HEAD
 LOGIN_URL =  '/accounts/login/' 
 LOGIN_REDIRECT_URL = 'home' 
 LOGOUT_REDIRECT_URL ='login'
@@ -153,6 +146,3 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'alidaannathomas@gmail.com'
 EMAIL_HOST_PASSWORD = 'xvkbsfznnayumqqz'
 EMAIL_USE_TLS = True
-=======
-
->>>>>>> dcf5a2028d67b2022efaf0a63aa7480fcdaf5847

@@ -89,14 +89,12 @@ class InternalUserEditForm(forms.Form):
     is_admin = forms.BooleanField(required=False)
 
 
-<<<<<<< HEAD
 class EmailLoginForm(forms.Form):
     email = forms.EmailField(label="Email", max_length=254)
     password = forms.CharField(label="Password", widget=forms.PasswordInput)
 
 
 
-=======
 
 class CustomEmailLoginForm(AuthenticationForm):
     username=forms.EmailField(
@@ -105,4 +103,3 @@ class CustomEmailLoginForm(AuthenticationForm):
             attrs={'autofocus':True}
         )
     )
->>>>>>> dcf5a2028d67b2022efaf0a63aa7480fcdaf5847
