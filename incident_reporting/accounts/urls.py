@@ -3,6 +3,7 @@ from . import views
 from .views import email_login_view
 from django.contrib.auth import views as auth_views
 from django.contrib import admin
+<<<<<<< HEAD
 from accounts.views import loginView, dashboardView, createUserView, editUserView, userListView, deleteUserView
 
 urlpatterns = [
@@ -23,6 +24,16 @@ urlpatterns = [
         template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
 
     path('login/', loginView,name='login'),
+=======
+from django.urls import path, include
+from accounts.views import dashboardView, createUserView, editUserView, userListView, deleteUserView
+from django.contrib.auth.views import LoginView, LogoutView
+from accounts.forms import CustomEmailLoginForm
+
+urlpatterns = [
+    path('login/', LoginView.as_view(template_name="registration/login.html",authentication_form=CustomEmailLoginForm),name='login'),
+    path("logout/", LogoutView.as_view(next_page="home"), name='logout'),
+>>>>>>> dcf5a2028d67b2022efaf0a63aa7480fcdaf5847
     path('dashboard/', dashboardView, name='dashboard'),
     path('create-user/',createUserView,name='create-user'),
     path('edit-user/<int:userId>/',editUserView,name='edit-user'),

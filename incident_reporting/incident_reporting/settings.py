@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'frontend',
     'accounts',
     'masterdata',
 ]
@@ -57,9 +58,13 @@ ROOT_URLCONF = 'incident_reporting.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+<<<<<<< HEAD
         'DIRS': [os.path.join(BASE_DIR, 'templates'),
                  os.path.join(BASE_DIR, 'accounts/templates'),
                  ],
+=======
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+>>>>>>> dcf5a2028d67b2022efaf0a63aa7480fcdaf5847
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,6 +141,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 AUTH_USER_MODEL = 'accounts.CustomUserProfile'
+<<<<<<< HEAD
 LOGIN_URL =  '/accounts/login/' 
 LOGIN_REDIRECT_URL = 'home' 
 LOGOUT_REDIRECT_URL ='login'
@@ -147,3 +153,6 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'alidaannathomas@gmail.com'
 EMAIL_HOST_PASSWORD = 'xvkbsfznnayumqqz'
 EMAIL_USE_TLS = True
+=======
+
+>>>>>>> dcf5a2028d67b2022efaf0a63aa7480fcdaf5847

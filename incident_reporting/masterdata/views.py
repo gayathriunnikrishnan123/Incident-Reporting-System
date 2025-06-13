@@ -2,6 +2,14 @@ from django.shortcuts import render, redirect
 from .models import Department, Division
 from .forms import DepartmentForm, DivisionForm
 
+<<<<<<< HEAD
+=======
+# Create your views here.
+from django.shortcuts import render, redirect
+from .models import Department, Division
+from .forms import DepartmentForm, DivisionForm
+
+>>>>>>> dcf5a2028d67b2022efaf0a63aa7480fcdaf5847
 
 def manage_departments(request):
     departments = Department.objects.all()
