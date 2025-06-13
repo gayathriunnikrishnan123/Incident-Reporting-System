@@ -1,7 +1,7 @@
 
 from django import forms
 from masterdata.models import Department, Division
-from accounts.models import CustomUserProfile
+from accounts.models import CustomUserProfile, Role, DepartmentProfile
 from django.contrib.auth.forms import AuthenticationForm
 
 
@@ -17,18 +17,19 @@ class UserCreationForm(forms.Form):
     phone = forms.CharField(max_length=15,widget=forms.TextInput(attrs={
             'placeholder': 'enter 10-digits ',
         }))
-
-    default_department = forms.ModelChoiceField(
-        queryset=Department.objects.all(),
-        required=False,
-        empty_label="Select Department"
-    )
     
     default_division = forms.ModelChoiceField(
         queryset=Division.objects.all(),
         required=False,
         empty_label="Select Division"
     )
+    
+    default_department = forms.ModelChoiceField(
+        queryset=Department.objects.all(),
+        required=False,
+        empty_label="Select Department"
+    )
+    
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'placeholder': 'enter password',
     }))
@@ -97,3 +98,16 @@ class CustomEmailLoginForm(AuthenticationForm):
             attrs={'autofocus':True}
         )
     )
+
+
+
+class RoleCreationForm(forms.ModelForm):
+    name = forms.CharField(max_length=100,widget=forms.TextInput(attrs={
+            'placeholder': 'enter role',
+        }))
+    description = forms.CharField(max_length=100,required=False,widget=forms.TextInput(attrs={
+            'placeholder': 'enter description',
+        }))
+    class Meta:
+        model=Role
+        fields=['name','description']

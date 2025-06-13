@@ -74,6 +74,12 @@ table.dataTable tbody tr:hover {
     opacity: 0.9;
 }
 
+.delete-btn:disabled,
+.delete-btn[disabled] {
+    background-color: #ccc;
+    cursor: not-allowed;
+    color: #666;
+}
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
     font-family: "Poppins", sans-serif;

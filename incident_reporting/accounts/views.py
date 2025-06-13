@@ -2,8 +2,8 @@ from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from accounts.forms import UserCreationForm, InternalUserEditForm
-from accounts.models import CustomUserProfile
+from accounts.forms import UserCreationForm, InternalUserEditForm, RoleCreationForm
+from accounts.models import CustomUserProfile, Role
 
 
 # Create your views here.
@@ -119,3 +119,40 @@ def deleteUserView(request, userId):
 def userListView(request):
     allUsers = CustomUserProfile.objects.all()
     return render(request, 'userMaster.html', {'users': allUsers})
+
+
+
+@login_required
+def roleView(request):
+    allRoles=Role.objects.all()
+    if request.method=='POST':
+        form=RoleCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('show-roles')
+    else:
+        form=RoleCreationForm()
+    return render(request,'roleMaster.html',{'form':form,'allRoles':allRoles,'edit_mode': False})
+
+
+
+
+def editRoleView(request, roleId):
+    role = get_object_or_404(Role,id=roleId)
+    allRoles = Role.objects.all()
+    if request.method == 'POST':
+        form = RoleCreationForm(request.POST, instance=role)
+        if form.is_valid():
+            form.save()
+            return redirect('show-roles')
+    else:
+        form=RoleCreationForm(instance=role)
+
+    return render(request,'roleMaster.html',{'form':form,'allRoles':allRoles,'edit_mode': True})
+
+
+@login_required
+def deleteRoleView(request, roleId):
+    role = Role.objects.get(id=roleId)
+    role.delete()
+    return redirect('show-roles')
