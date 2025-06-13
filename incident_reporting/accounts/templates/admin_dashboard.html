@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}Admin | Dashboard{% endblock title %}
+
+{% block content %}
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon">DB</div>
+                <div class="logo-text">Dashboard</div>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <span id="toggleIcon">‹</span>
+                </button>
+            </div>
+            
+            <nav>
+                <div class="nav-item active">
+                    <div class="nav-icon">
+                        <img src="{% static 'images/user.png' %}" alt="User Management" title="User Management">
+
+                    </div>
+                    <span>User management</span>
+                </div>
+                
+                <div class="nav-item">
+                    <div class="nav-icon">
+                       <img src="{% static 'images/system.png' %}" alt="System Configuration" title="System Configuration">
+
+                    </div>
+                    <span>System Configuration</span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">
+                        <img src="{% static 'images/department.png' %}" alt="Department" title="Department">
+
+                    </div>
+                    <span>Department</span>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">
+                        <img src="{% static 'images/division.png' %}" alt="Division" title="Division">
+
+                    </div>
+                    <span>Division</span>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Admin Header Card -->
+            <div class="admin-header-card" id="adminHeaderCard">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+                <div class="admin-greeting">
+                    Hello {{request.user.fullname}}
+                    <span class="greeting-emoji">👋</span>
+                </div>
+                
+                <div class="user-profile" id="userProfile">
+                    <div class="user-avatar">AD</div>
+                    <div class="user-name">{{request.user.fullname}}</div>
+                    <div class="dropdown-arrow">▼</div>
+                    
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="#" class="dropdown-item">
+                            <i>👤</i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="#" class="dropdown-item">
+                            <i>🔑</i>
+                            <span>Change Password</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'logout' %}" class="dropdown-item">
+                            <i>🚪</i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+             <h3>hello</h3>
+        </div>
+
+        <div class="mainpart">
+            
+        </div>
+    </div>
+
+{% endblock content %}
+
+
+    {% block scripts %}
+
+
+        <script>
+            // Sidebar Toggle Functionality
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const toggleIcon = document.getElementById('toggleIcon');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+
+            // Desktop sidebar toggle
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('minimized');
+                
+                if (sidebar.classList.contains('minimized')) {
+                    toggleIcon.textContent = '›';
+                } else {
+                    toggleIcon.textContent = '‹';
+                }
+            });
+
+            // Mobile menu toggle
+            mobileMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            });
+
+            // Close mobile sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            });
+
+            // Navigation item click handling
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    // Remove active class from all items
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    // Add active class to clicked item
+                    this.classList.add('active');
+                    
+                    // Close mobile sidebar after selection
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('show');
+                        sidebarOverlay.classList.remove('show');
+                    }
+                });
+            });
+
+            // User Profile Dropdown
+            const userProfile = document.getElementById('userProfile');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+
+            userProfile.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userProfile.classList.toggle('active');
+                dropdownMenu.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userProfile.contains(e.target)) {
+                    userProfile.classList.remove('active');
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+
+            // Dropdown item click handling
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                   
+                    const action = this.querySelector('span').textContent;
+                    
+                    // Close dropdown
+                    userProfile.classList.remove('active');
+                    dropdownMenu.classList.remove('show');
+                    if (action === 'Logout') {
+                        return;
+                    }
+                     e.preventDefault();
+                    // Handle actions
+                    switch(action) {
+                        case 'Profile':
+                            alert('Profile page would open here');
+                            break;
+                        case 'Change Password':
+                            alert('Change password modal would open here');
+                            break;
+                        case 'Logout':
+                            if (confirm('Are you sure you want to logout?')) {
+                                return
+                            }
+                            break;
+                    }
+                });
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                }
+            });
+
+            // Add smooth hover effects
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    if (!sidebar.classList.contains('minimized')) {
+                        this.style.transform = 'translateX(5px)';
+                    }
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+
+            // Admin header card hover effect
+            const adminHeaderCard = document.getElementById('adminHeaderCard');
+            adminHeaderCard.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+
+            adminHeaderCard.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        </script>
+    
+    
+    {% endblock scripts %}
+

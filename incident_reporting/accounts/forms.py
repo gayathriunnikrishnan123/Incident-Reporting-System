@@ -2,7 +2,7 @@
 from django import forms
 from masterdata.models import Department, Division
 from accounts.models import CustomUserProfile
-
+from django.contrib.auth.forms import AuthenticationForm
 
 
 class UserCreationForm(forms.Form):
@@ -87,3 +87,13 @@ class InternalUserEditForm(forms.Form):
     is_active = forms.BooleanField(required=False)
     is_staff = forms.BooleanField(required=False)
     is_admin = forms.BooleanField(required=False)
+
+
+
+class CustomEmailLoginForm(AuthenticationForm):
+    username=forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(
+            attrs={'autofocus':True}
+        )
+    )

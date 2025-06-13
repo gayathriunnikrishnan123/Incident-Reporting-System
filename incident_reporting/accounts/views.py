@@ -5,27 +5,31 @@ from django.contrib import messages
 from accounts.forms import UserCreationForm, InternalUserEditForm
 from accounts.models import CustomUserProfile
 
+
 # Create your views here.
 
 
-def loginView(request):
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        validUser = authenticate(request, username=username, password=password)
+# def loginView(request):
+#     if request.method == "POST":
+#         username = request.POST.get("username")
+#         password = request.POST.get("password")
+#         validUser = authenticate(request, username=username, password=password)
 
-        if validUser is not None:
-            login(request, validUser)
-            return redirect("dashboard")
-        else:
-            messages.error(request, "invalid username and password")
+#         if validUser is not None:
+#             login(request, validUser)
+#             return redirect("dashboard")
+#         else:
+#             messages.error(request, "invalid username and password")
 
-    return render(request, "login.html")
+#     return render(request, "login.html")
+
+
+
 
 
 @login_required
 def dashboardView(request):
-    return HttpResponse("dashboard")
+    return render(request,'admin_dashboard.html')
 
 
 @login_required
