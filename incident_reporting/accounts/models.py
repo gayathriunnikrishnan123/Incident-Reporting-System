@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
 )
 from masterdata.models import Department, Division
 from accounts.managers import MyCustomUserManager
+from django.db.models import Q, UniqueConstraint
 
 # Create your models here.
 
@@ -42,6 +43,7 @@ class CustomUserProfile(AbstractBaseUser, PermissionsMixin):
 class Role(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
+    level = models.IntegerField(default=1)
 
     class Meta:
         db_table = "Role_Group"
@@ -52,19 +54,38 @@ class Role(models.Model):
 
 class DepartmentProfile(models.Model):
     user = models.ForeignKey(CustomUserProfile, on_delete=models.CASCADE)
-    division = models.ForeignKey(Division, on_delete=models.PROTECT, null=True, blank=True)
+    division = models.ForeignKey(
+        Division, on_delete=models.PROTECT, null=True, blank=True
+    )
     department = models.ForeignKey(
         Department, on_delete=models.PROTECT, null=True, blank=True
     )
     role = models.ForeignKey(Role, on_delete=models.PROTECT)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ("user", "division", "department", "role")
+        constraints = [
+            UniqueConstraint(
+                fields=["user", "role"],
+                condition=Q(division__isnull=True, department__isnull=True),
+                name="user already exist with same role and null division, department",
+            ),
+            UniqueConstraint(
+                fields=["user", "division", "role"],
+                condition=Q(department__isnull=True),
+                name="Unique User-division-role",
+            ),
+            UniqueConstraint(
+                fields=["user", "department", "role"],
+                condition=Q(division__isnull=True),
+                name="Unique User-department-role",
+            ),
+            UniqueConstraint(
+                fields=["user", "division", "department", "role"],
+                name="Already exist",
+            ),
+        ]
         db_table = "Department_Profile"
-
-    
-
-
 
 
 class AuditLog(models.Model):
@@ -77,4 +98,4 @@ class AuditLog(models.Model):
 
     class Meta:
         db_table = "Audit_Log"
-        ordering = ['-timestamp']
+        ordering = ["-timestamp"]
