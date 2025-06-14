@@ -203,6 +203,12 @@ a:hover {
 .social-links a:hover {
     color: #4895ef;
 }
+.error-text {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
 
 
 /* Responsive Design */

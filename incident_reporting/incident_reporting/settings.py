@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = 'django-insecure-ni$twoy_8e%h9x$%q^33b%$8mov08dz$87iq)rzbd43q5l(ww_'
+SECRET_KEY = 'django-insecure-$1sgm6=so!6d620iz%mfrg*8*m3@5)+c*nvpm@974q^%i5o9t6'
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -36,6 +36,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'accounts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'frontend',
-    'accounts',
     'masterdata',
 ]
 
@@ -129,7 +129,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']  
 STATIC_ROOT = BASE_DIR / 'staticfiles'    
 

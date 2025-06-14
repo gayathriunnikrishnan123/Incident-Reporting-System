@@ -63,11 +63,12 @@ a:hover {
 }
 
 .btn:hover {
-    background-color: #4a89dc;  /* Slightly darker blue */
+    background-color: #4a89dc;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-/* Navigation */
+    color: white !important;
+} 
+/* Navigation
 .navbar {
     background: white;
     padding: 15px 0;

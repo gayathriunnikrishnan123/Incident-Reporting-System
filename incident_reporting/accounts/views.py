@@ -43,10 +43,6 @@ def userManagementView(request):
 
 
 
-
-
-
-
 @login_required
 def createUserView(request):
     if request.method == "POST":
@@ -120,3 +116,6 @@ def deleteUserView(request, userId):
 def userListView(request):
     allUsers = CustomUserProfile.objects.all()
     return render(request, 'userMaster.html', {'users': allUsers})
+
+
+

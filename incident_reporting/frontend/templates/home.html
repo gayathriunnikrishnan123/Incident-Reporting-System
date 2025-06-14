@@ -38,9 +38,9 @@
                     <p>We're glad to see you again. Explore your dashboard and discover what's new.</p>
                     <div class="hero-buttons">
                         {% if request.user.is_authenticated %}
-                        <a href="{% url 'dashboard' %}" class="btn btn-primary"> Dasboard</a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important; box-shadow:none !important; text-decoration:none !important;"> Dasboard</a>
                         {% else %}
-                        <a href="{% url 'login' %}" class="btn btn-primary"> Login</a>
+                        <a href="{% url 'login' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important; box-shadow:none !important; text-decoration:none !important;">Login</a>
                         {% endif %}
                     </div>
                 </div>

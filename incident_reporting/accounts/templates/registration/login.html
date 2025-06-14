@@ -39,13 +39,7 @@
             <div class="form-group">
               <label>Email address</label>
               <div class="input-group">
-                <input 
-                  type="email" 
-                  name="username" 
-                  placeholder="Enter your email" 
-                  required 
-                  value="{{ form.username.value|default:'' }}"
-                />
+                <input type="email" name="username" placeholder="Enter your email" required value="{{ form.username.value|default:'' }}"/>
                 <i class="fas fa-envelope"></i>
               </div>
               {% if form.username.errors %}
@@ -57,13 +51,8 @@
             <div class="form-group">
               <label>Password</label>
               <div class="input-group">
-                <input 
-                  type="password" 
-                  name="password" 
-                  placeholder="Enter your password" 
-                  required 
-                />
-                <i class="far fa-eye toggle-password"></i>
+                <input type="password" name="password" placeholder="Enter your password" required />
+                <i class="fas fa-envelope"></i>
               </div>
               {% if form.password.errors %}
                 <div class="field-error">{{ form.password.errors.0 }}</div>
@@ -71,8 +60,7 @@
             </div>
 
             <div class="form-options">
-
-              {# <a href="{% url 'password_reset' %}" class="forgot-password">Forgot password?</a> #}
+               <a href="{% url 'password_reset' %}" class="forgot-password">Forgot password?</a> 
             </div>
 
             <button class="btn-login" type="submit">
