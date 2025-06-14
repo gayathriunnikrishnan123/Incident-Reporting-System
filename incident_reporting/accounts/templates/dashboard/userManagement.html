@@ -22,4 +22,21 @@
     </div>
 </div>
 
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">🔏</div>
+        </div>
+        <div class="stat-value"><a href="{% url 'show-roles' %}">Roles</a></div>
+        <div class="stat-change positive">Creating Roles for access</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">🪪</div>
+        </div>
+        <div class="stat-value"><a href="{% url 'show-maps' %}">Department Profile</a></div>
+        <div class="stat-change positive">Department profile mapping, which assigns particular roles for each user on each division and department</div>
+    </div>
+</div>
+
 {% endblock %}

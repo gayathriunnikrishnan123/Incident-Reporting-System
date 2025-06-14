@@ -1,11 +1,16 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from masterdata.models import Department, Division
+from masterdata.forms import DepartmentForm, DivisionForm
+from django.contrib.auth.decorators import login_required
+from accounts.decorators import audit_trail_decorator
 
-# Create your views here.
-from django.shortcuts import render, redirect
-from .models import Department, Division
-from .forms import DepartmentForm, DivisionForm
 
 
+
+
+# 🔸 Manage Departments
+@login_required
+@audit_trail_decorator
 def manage_departments(request):
     departments = Department.objects.all()
     form = DepartmentForm()
@@ -23,8 +28,11 @@ def manage_departments(request):
     })
 
 
+# 🔸 Edit Department
+@login_required
+@audit_trail_decorator
 def edit_department(request, pk):
-    department = Department.objects.get(pk=pk)
+    department = get_object_or_404(Department, pk=pk)
     departments = Department.objects.all()
     form = DepartmentForm(instance=department)
 
@@ -42,14 +50,20 @@ def edit_department(request, pk):
     })
 
 
+# 🔸 Delete Department
+@login_required
+@audit_trail_decorator
 def delete_department(request, pk):
-    department = Department.objects.get(pk=pk)
+    department = get_object_or_404(Department, pk=pk)
     department.delete()
     return redirect('manage_departments')
 
 
+# 🔹 Manage Divisions
+@login_required
+@audit_trail_decorator
 def manage_divisions(request):
-    divisions = Division.objects.select_related('department').all()
+    divisions = Division.objects.all()
     form = DivisionForm()
 
     if request.method == 'POST':
@@ -65,9 +79,12 @@ def manage_divisions(request):
     })
 
 
+# 🔹 Edit Division
+@login_required
+@audit_trail_decorator
 def edit_division(request, pk):
-    division = Division.objects.get(pk=pk)
-    divisions = Division.objects.select_related('department').all()
+    division = get_object_or_404(Division, pk=pk)
+    divisions = Division.objects.all()
     form = DivisionForm(instance=division)
 
     if request.method == 'POST':
@@ -84,8 +101,10 @@ def edit_division(request, pk):
     })
 
 
+# 🔹 Delete Division
+@login_required
+@audit_trail_decorator
 def delete_division(request, pk):
-    division = Division.objects.get(pk=pk)
+    division = get_object_or_404(Division, pk=pk)
     division.delete()
     return redirect('manage_divisions')
-
