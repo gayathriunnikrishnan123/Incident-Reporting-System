@@ -29,64 +29,79 @@
             </div>
         </div>
 
-        <nav class="sidebar-nav">
-            <!-- Marketing Section -->
-            <div class="nav-section">
-                <div class="nav-section-title">Essentials</div>
-                <a href="{% url 'dashboard' %}" class="nav-item">
-                    {% comment %} {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %} {% endcomment %}
-                    <div class="nav-icon">📊</div>
-                    Dashboard
-                </a>
-                <a href="{% url 'system-config' %}" class="nav-item">
-                    <div class="nav-icon">🛍️</div>
-                    Master Data
-                </a>
-                <a href="{% url 'user-management' %}" class="nav-item">
-                    <div class="nav-icon">👥</div>
-                    User Management
-                </a>
-                <a href="#" class="nav-item">
-                    <div class="nav-icon">📦</div>
-                    All incidents
-                </a>
-                <a href="{% url 'auditlog' %}" class="nav-item">
-                    <div class="nav-icon">📍</div>
-                    Tracking
-                </a>
-                
-            </div>
+<nav class="sidebar-nav">
+    <!-- Essentials Section -->
+    <div class="nav-section">
+        <div class="nav-section-title">Essentials</div>
+        <a href="{% url 'dashboard' %}" class="nav-item">
+            <div class="nav-icon">📊</div>
+            Dashboard
+        </a>
+        
+        <!-- Only show System Config to admins -->
+        {% if is_admin %}
+        <a href="{% url 'system-config' %}" class="nav-item">
+            <div class="nav-icon">⚙️</div>
+            System Configuration
+        </a>
+        {% endif %}
+        
+        <!-- Only show User Management to admins -->
+        {% if is_admin %}
+        <a href="{% url 'user-management' %}" class="nav-item">
+            <div class="nav-icon">👥</div>
+            User Management
+        </a>
+        {% endif %}
+        
+        <!-- Show appropriate incident label -->
+        <a href="#" class="nav-item">
+            <div class="nav-icon">📦</div>
+            {% if is_responder %}My Incidents{% else %}All Incidents{% endif %}
+        </a>
+        
+        <!-- Show Audit Log to reviewers and admins -->
+        {% if is_reviewer or is_admin %}
+        <a href="{% url 'auditlog' %}" class="nav-item">
+            <div class="nav-icon">📍</div>
+            Audit Log
+        </a>
+        {% endif %}
+    </div>
 
-            <!-- Payments Section -->
-            <div class="nav-section">
-                <div class="nav-section-title">Others</div>
-                <a href="#" class="nav-item">
-                    <div class="nav-icon">📋</div>
-                    Reports
-                </a>
-                <a href="#" class="nav-item">
-                    <div class="nav-icon">💰</div>
-                    Op2
-                </a>
-            </div>
+    <!-- Reports Section -->
+    <div class="nav-section">
+        <div class="nav-section-title">Reports</div>
+        <a href="#" class="nav-item">
+            <div class="nav-icon">📋</div>
+            Incident Reports
+        </a>
+        <!-- Show Analytics to reviewers and admins -->
+        {% if is_reviewer or is_admin %}
+        <a href="#" class="nav-item">
+            <div class="nav-icon">📈</div>
+            Analytics
+        </a>
+        {% endif %}
+    </div>
 
-            <!-- System Section -->
-            <div class="nav-section">
-                <div class="nav-section-title">System</div>
-                <a href="{% url 'password_change' %}" class="nav-item">
-                    <div class="nav-icon">🔑</div>
-                    Change Password
-                </a>
-                <a href="{% url 'logout' %}" class="nav-item">
-                    <div class="nav-icon">⚙️</div>
-                    Log Out
-                </a>
-                <a href="#" class="nav-item" onclick="toggleDarkMode()">
-                    <div class="nav-icon">🌙</div>
-                    Dark mode
-                </a>
-            </div>
-        </nav>
+    <!-- System Section (visible to all logged-in users) -->
+    <div class="nav-section">
+        <div class="nav-section-title">System</div>
+        <a href="{% url 'password_change' %}" class="nav-item">
+            <div class="nav-icon">🔑</div>
+            Change Password
+        </a>
+        <a href="{% url 'logout' %}" class="nav-item">
+            <div class="nav-icon">🚪</div>
+            Log Out
+        </a>
+        <a href="#" class="nav-item" onclick="toggleDarkMode()">
+            <div class="nav-icon">{% if is_dark_mode %}☀️{% else %}🌙{% endif %}</div>
+            {% if is_dark_mode %}Light{% else %}Dark{% endif %} Mode
+        </a>
+    </div>
+</nav>
 
         <!-- User Profile (moved to bottom via flex) -->
         <div class="user-profile">

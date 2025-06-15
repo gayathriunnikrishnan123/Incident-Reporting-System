@@ -10,7 +10,9 @@ from accounts.forms import (
     DepartmentProfileForm,
 )
 from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
-from accounts.decorators import audit_trail_decorator
+from accounts.decorators import *
+from accounts.utils import user_is_admin, user_is_reviewer, user_is_responder
+from django.shortcuts import render
 
 
 # Create your views here.
@@ -31,24 +33,49 @@ from accounts.decorators import audit_trail_decorator
 #     return render(request, "login.html")
 
 
+# accounts/views.py
+
+
 @login_required
 @audit_trail_decorator
 def dashboardView(request):
-    return render(request, "dashboard/dashboard.html")
-
-
+    user = request.user
+    
+    if user_is_admin(user):
+        # Admin dashboard
+        return render(request, "admin_dashboard.html", {
+            'is_admin': True,
+            'is_reviewer': True,  # Admins can also do reviewer tasks
+            'is_responder': True  # Admins can also do responder tasks
+        })
+    elif user_is_reviewer(user):
+        # Reviewer dashboard
+        return render(request, "admin_dashboard.html", {
+            'is_reviewer': True,
+            'is_responder': True  # Reviewers can also do responder tasks
+        })
+    elif user_is_responder(user):
+        # Responder dashboard
+        return render(request, "admin_dashboard.html", {
+            'is_responder': True
+        })
+    else:
+        # Regular user dashboard
+        return render(request, "admin_dashboard.html")
+    
+# @admin_required
 @login_required
 @audit_trail_decorator
 def systemConfigView(request):
     return render(request, "dashboard/systemConfig.html")
 
-
+@responder_required
 @login_required
 @audit_trail_decorator
 def userManagementView(request):
     return render(request, "dashboard/userManagement.html")
 
-
+@reviewer_required
 @login_required
 @audit_trail_decorator
 def auditLogView(request):
