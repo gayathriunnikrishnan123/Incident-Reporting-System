@@ -63,9 +63,10 @@ a:hover {
 }
 
 .btn:hover {
-    background-color: #4a89dc;  /* Slightly darker blue */
+    background-color: #4a89dc;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    color: white !important;
 }
 /* Navigation */
 .navbar {
@@ -417,6 +418,12 @@ a:hover {
 .auth-links a:hover {
   color: #2563eb;
   text-decoration: underline;
+}
+
+.error-text {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
 }
 
 /* Responsive Design */

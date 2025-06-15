@@ -60,7 +60,7 @@ body {
     font-weight: bold;
 } */
 
-.logo {
+.sidebar-header .logo {
     width: 32px;
     height: 32px;
     background: #10b981;
@@ -284,6 +284,8 @@ body {
     font-size: 14px;
     font-weight: 600;
     color: #111827;
+    /* line-height: 0px; */
+    /* margin-bottom: 0px; */
 }
 
 .user-info p {
