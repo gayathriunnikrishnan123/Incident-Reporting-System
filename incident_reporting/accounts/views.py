@@ -33,6 +33,7 @@ from accounts.decorators import audit_trail_decorator
 @login_required
 @audit_trail_decorator
 def dashboardView(request):
+    print(request.session)
     return render(request, "dashboard/dashboard.html")
 
 
