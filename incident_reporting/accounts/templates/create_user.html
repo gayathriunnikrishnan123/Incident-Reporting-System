@@ -124,6 +124,34 @@
         </form>
     </div>
 </div>
+<script>
+    const divisionSelect = document.getElementById("id_default_division");
+    const departmentSelect = document.getElementById("id_default_department");
+
+    divisionSelect.addEventListener("change", function () {
+        const divisionId = this.value;
+        if (!divisionId) {
+            departmentSelect.innerHTML = '<option value="">Select Department</option>';
+            return;
+        }
+
+        fetch("{% url 'ajax-get-departments' %}?division_id=" + divisionId)
+            .then(response => response.json())
+            .then(data => {
+                departmentSelect.innerHTML = '<option value="">Select Department</option>';
+                data.forEach(dept => {
+                    const option = document.createElement("option");
+                    option.value = dept.id;
+                    option.textContent = dept.name;
+                    departmentSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching departments:", error);
+            });
+    });
+</script>
+
 
 
     {% comment %} <script src="{% static 'js/user_form.js' %}"></script> {% endcomment %}

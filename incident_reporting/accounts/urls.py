@@ -22,6 +22,7 @@ urlpatterns = [
     path('userManagement/', views.userManagementView, name='user-management'),
 
     path('create-user/',views.createUserView,name='create-user'),
+    path('ajax/get-departments/', views.get_departments_by_division, name='ajax-get-departments'),
     path('edit-user/<int:userId>/',views.editUserView,name='edit-user'),
     path('delete-user/<int:userId>/',views.deleteUserView,name='delete-user'),
     path('all-users/',views.userListView,name='show-users'),

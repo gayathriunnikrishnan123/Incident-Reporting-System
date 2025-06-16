@@ -27,6 +27,7 @@ class CustomUserProfile(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)  # Allows login to admin panel
     is_admin = models.BooleanField(default=False)  # Custom field for our understanding
+    is_deleted = models.BooleanField(default=False)
 
     objects = MyCustomUserManager()
 
@@ -44,6 +45,7 @@ class Role(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True)
     level = models.IntegerField(default=1)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         db_table = "Role_Group"
@@ -62,6 +64,7 @@ class DepartmentProfile(models.Model):
     )
     role = models.ForeignKey(Role, on_delete=models.PROTECT)
     is_active = models.BooleanField(default=True)
+    is_deleted = models.BooleanField(default=False)
 
     class Meta:
         constraints = [

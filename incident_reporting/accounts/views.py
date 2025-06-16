@@ -10,6 +10,8 @@ from accounts.forms import (
 )
 from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
 from accounts.decorators import audit_trail_decorator
+from django.http import JsonResponse
+from masterdata.models import Department
 
 
 # Create your views here.
@@ -131,22 +133,23 @@ def editUserView(request, userId):
 @login_required
 @audit_trail_decorator
 def deleteUserView(request, userId):
-    userData = CustomUserProfile.objects.get(id=userId)
-    userData.delete()
+    userData = get_object_or_404(CustomUserProfile, id=userId, is_deleted=False)
+    userData.is_deleted = True
+    userData.save()
     return redirect("show-users")
 
 
 @login_required
 @audit_trail_decorator
 def userListView(request):
-    allUsers = CustomUserProfile.objects.all()
+    allUsers = CustomUserProfile.objects.filter(is_deleted=False)
     return render(request, "userMaster.html", {"users": allUsers})
 
 
 @login_required
 @audit_trail_decorator
 def roleView(request):
-    allRoles = Role.objects.all()
+    allRoles = Role.objects.filter(is_deleted=False)
     if request.method == "POST":
         form = RoleCreationForm(request.POST)
         if form.is_valid():
@@ -186,15 +189,16 @@ def editRoleView(request, roleId):
 @login_required
 @audit_trail_decorator
 def deleteRoleView(request, roleId):
-    role = Role.objects.get(id=roleId)
-    role.delete()
+    role = get_object_or_404(Role, id=roleId, is_deleted=False)
+    role.is_deleted = True
+    role.save()
     return redirect("show-roles")
 
 
 @login_required
 @audit_trail_decorator
 def departmentProfileView(request):
-    allMappings = DepartmentProfile.objects.all()
+    allMappings = DepartmentProfile.objects.filter(is_deleted=False)
     if request.method == "POST":
         form = DepartmentProfileForm(request.POST)
         if form.is_valid():
@@ -212,8 +216,8 @@ def departmentProfileView(request):
 @login_required
 @audit_trail_decorator
 def departmentProfileEditView(request, mapId):
-    map = get_object_or_404(DepartmentProfile, id=mapId)
-    allMappings = DepartmentProfile.objects.all()
+    map = get_object_or_404(DepartmentProfile, id=mapId, is_deleted=False)
+    allMappings = DepartmentProfile.objects.filter(is_deleted=False)
     if request.method == "POST":
         form = DepartmentProfileForm(request.POST, instance=map)
         if form.is_valid():
@@ -231,6 +235,16 @@ def departmentProfileEditView(request, mapId):
 @login_required
 @audit_trail_decorator
 def departmentProfileDeleteView(request, mapId):
-    map = get_object_or_404(DepartmentProfile, id=mapId)
-    map.delete()
+    map = get_object_or_404(DepartmentProfile, id=mapId, is_deleted=False)
+    map.is_deleted = True
+    map.save()
     return redirect("show-maps")
+
+
+def get_departments_by_division(request):
+    division_id = request.GET.get("division_id")
+    if division_id:
+        departments = Department.objects.filter(division_id=division_id, is_deleted=False).values("id", "name")
+    else:
+        departments = Department.objects.none()
+    return JsonResponse(list(departments), safe=False)
