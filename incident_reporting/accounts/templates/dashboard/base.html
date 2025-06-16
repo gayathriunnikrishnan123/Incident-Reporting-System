@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{% static "css/dashBase.css" %}">
+    {% block headersPart %}{% endblock headersPart %}
+     <style>
+        {% block extra_css %}{% endblock %}
+    </style> 
+
+    
+</head>
+<body>
+    
+<div class="dashboard-container">
+    <!-- Sidebar Toggle Button (moved outside sidebar) -->
+    
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">F</div>
+            {% comment %} <span style="font-weight: 600; color: #111827;" id="lg2">SK</span> {% endcomment %}
+            <div class="sidebar-toggle" id="toggleSidebar" title="Toggle Sidebar">
+                <span id="toggle-icon">←</span>
+            </div>
+        </div>
+
+        <div class="user-profile" id="profileToggle">
+            <div class="user-avatar">A</div>
+            <div class="user-info">
+                <h4>{{ request.user.get_full_name|default:request.user.fullname }}</h4>
+                <p>{{ request.user.departmentprofile_set.first.role.name }}</p>
+            </div>
+        </div>
+        
+        <div class="profile-menu" id="profileMenu">
+            <a href="#" class="nav-item">👤 <span>Profile</span></a>
+            <a href="{% url 'password_change' %}" class="nav-item">🔑 <span>Change Password</span></a>
+            <a href="{% url 'logout' %}" class="nav-item">🚪 <span>Logout</span></a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- Marketing Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Essentials</div>
+                <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <div class="nav-icon">📊</div>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'system-config' %}" class="nav-item {% if request.resolver_match.url_name == 'system-config' %}active{% endif %}">
+                    <div class="nav-icon">🛍️</div>
+                    <span>Master Data</span>
+                </a>
+                <a href="{% url 'user-management' %}" class="nav-item {% if request.resolver_match.url_name == 'user-management' %}active{% endif %}">
+                    <div class="nav-icon">👥</div>
+                    <span>User Management</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <div class="nav-icon">📦</div>
+                    <span>All incidents</span>
+                </a>
+                <a href="{% url 'auditlog' %}" class="nav-item {% if request.resolver_match.url_name == 'auditlog' %}active{% endif %}">
+                    <div class="nav-icon">📍</div>
+                    <span>Tracking</span>
+                </a>
+                
+            </div>
+
+            <!-- Report Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">Others</div>
+                <a href="#" class="nav-item">
+                    <div class="nav-icon">📋</div>
+                    <span>Reports</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <div class="nav-icon">💰</div>
+                    <span>Op2</span>
+                </a>
+            </div>
+
+            <!-- System Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">System</div>
+                <a href="#" class="nav-item" onclick="toggleDarkMode()">
+                    <div class="nav-icon">🌙</div>
+                    <span>Dark mode</span>
+                </a>
+            </div>
+        </nav>
+
+        
+        {% comment %} <div class="user-profile">
+            <div class="user-avatar">HN</div>
+            <div class="user-info">
+                <h4>{{ request.user.get_full_name|default:request.user.fullname }}</h4>
+                <p>{{ request.user.departmentprofile_set.first.role.name }}</p>
+            </div>
+        </div> {% endcomment %}
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <button class="mobile-sidebar-toggle" onclick="toggleMobileSidebar()">☰</button>
+            <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="header-actions">
+                <span class="time-period">{% block time_period %}{% now "M d, Y" %}{% endblock %}</span>
+                {% block header_actions %}{% endblock %}
+            </div>
+        </header>
+
+        <div class="content">
+            {% block content %}
+            <!-- Dashboard Content -->
+
+            {% endblock content %}
+        </div>
+    </main>
+    
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay" style="display: none;"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = document.getElementById("sidebar");
+            const icon = document.getElementById("toggle-icon");
+            const toggleBtn = document.getElementById("toggleSidebar");
+
+            // Restore minimized state from localStorage
+            const isMinimized = localStorage.getItem("sidebarMinimized") === "true";
+            if (isMinimized) {
+                sidebar.classList.add("minimized");
+                icon.textContent = '→';
+            }
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    sidebar.classList.toggle("minimized");
+                    const minimizedNow = sidebar.classList.contains("minimized");
+                    localStorage.setItem("sidebarMinimized", minimizedNow);
+                    icon.textContent = minimizedNow ? '→' : '←';
+                    });
+                }
+            });
+
+
+            let isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                const darkIcon = document.querySelector('a[onclick*="toggleDarkMode"] .nav-icon');
+                if (darkIcon) darkIcon.textContent = '☀️';
+            }
+
+            const darkToggle = document.querySelector('a[onclick*="toggleDarkMode"]');
+            if (darkToggle) {
+                darkToggle.addEventListener("click", function () {
+                    isDarkMode = !isDarkMode;
+                    document.body.classList.toggle("dark-mode", isDarkMode);
+                    localStorage.setItem("darkMode", isDarkMode);
+                    const darkIcon = document.querySelector('a[onclick*="toggleDarkMode"] .nav-icon');
+                    if (darkIcon) darkIcon.textContent = isDarkMode ? '☀️' : '🌙';
+                });
+            }
+    </script>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        // Toggle sidebar for mobile
+        function toggleMobileSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('visible');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('visible');
+        }
+
+        overlay.addEventListener('click', closeSidebar);
+
+
+        document.addEventListener('click', function(event) {
+            const isSidebarOpen = sidebar.classList.contains('open');
+
+
+            if (
+                isSidebarOpen &&
+                !sidebar.contains(event.target) &&
+                !event.target.classList.contains('mobile-sidebar-toggle')
+            ) {
+                closeSidebar();
+            }
+        });
+
+        
+    </script>
+
+    <script>
+        const profileToggle = document.getElementById('profileToggle');
+        const profileMenu = document.getElementById('profileMenu');
+
+        profileToggle.addEventListener('click', () => {
+            profileMenu.style.display = profileMenu.style.display === 'flex' ? 'none' : 'flex';
+        });
+    </script>
+
+
+
+    {% block extra_js %}
+    
+    {% endblock %}
+
+</body>
+</html>

@@ -1,10 +1,15 @@
 from django import forms
-from .models import Department, Division
+from masterdata.models import Department, Division
 
 class DepartmentForm(forms.ModelForm):
+    division = forms.ModelChoiceField(
+        queryset=Division.objects.all(),
+        empty_label="Select Division",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
     class Meta:
         model = Department
-        fields = ['name', 'description']
+        fields = ['name', 'division', 'description']
         widgets = {
             'description': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -13,9 +18,10 @@ class DepartmentForm(forms.ModelForm):
         }
 
 class DivisionForm(forms.ModelForm):
+
     class Meta:
         model = Division
-        fields = ['name', 'department', 'description']
+        fields = ['name','description']
         widgets = {
             'description': forms.TextInput(attrs={
                 'class': 'form-control',

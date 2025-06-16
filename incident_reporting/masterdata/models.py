@@ -1,7 +1,8 @@
 from django.db import models
 
+# Create your models here.
 
-class Department(models.Model):
+class Division(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
 
@@ -9,9 +10,9 @@ class Department(models.Model):
         return self.name
 
 
-class Division(models.Model):
+class Department(models.Model):
     name = models.CharField(max_length=100)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    division = models.ForeignKey(Division, on_delete=models.PROTECT)
     description = models.TextField(blank=True)
 
     def __str__(self):

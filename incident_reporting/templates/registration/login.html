@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="login-screen">
+  <div class="login-container">
+    <div class="login-card">
+
+      <!-- Left Side (Image) -->
+      <div class="card-image-side">
+        <img src="{% static 'images/login.jpg' %}" alt="Decorative background" />
+      </div>
+
+      <!-- Right Side (Form) -->
+      <div class="card-form-side">
+        <div class="form-content">
+          <div class="brand-header">
+            <h1>Login</h1>
+            <p>Sign into your account</p>
+          </div>
+
+          {% if form.non_field_errors %}
+          <div class="error-message">
+            {{ form.non_field_errors.0 }}
+          </div>
+          {% endif %}
+
+          <form method="POST" action="{% url 'login' %}?next={% url 'dashboard' %}">
+            {% csrf_token %}
+
+            <!-- Email (username) -->
+            <div class="form-group">
+              <label>Email address</label>
+              <div class="input-group">
+                <input 
+                  type="email" 
+                  name="username" 
+                  placeholder="Enter your email" 
+                  required 
+                  value="{{ form.username.value|default:'' }}"
+                />
+                <i class="fas fa-envelope"></i>
+              </div>
+              {% if form.username.errors %}
+                <div class="field-error">{{ form.username.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+              <label>Password</label>
+              <div class="input-group">
+                <input 
+                  type="password" 
+                  name="password" 
+                  placeholder="Enter your password" 
+                  required 
+                />
+                <i class="far fa-eye toggle-password"></i>
+              </div>
+              {% if form.password.errors %}
+                <div class="field-error">{{ form.password.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="form-options">
+
+             <a href="{% url 'password_reset' %}" class="forgot-password">Forgot password?</a>
+            </div>
+
+            <button class="btn-login" type="submit">
+              Login <i class="fas fa-arrow-right"></i>
+            </button>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
