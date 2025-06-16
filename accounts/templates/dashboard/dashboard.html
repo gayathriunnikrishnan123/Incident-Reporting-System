@@ -1,0 +1,47 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Hey {{request.user.fullname}}{% endblock %}
+
+{% block content %}
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">👥</div>
+                        Total
+                    </div>
+                    <div class="stat-value">57</div>
+                    <div class="stat-change positive">...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">💰</div>
+                        Total
+                    </div>
+                    <div class="stat-value">65</div>
+                    <div class="stat-change positive">...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">📦</div>
+                        Total
+                    </div>
+                    <div class="stat-value">13</div>
+                    <div class="stat-change negative">...</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">↩️</div>
+                        Total
+                    </div>
+                    <div class="stat-value">89</div>
+                    <div class="stat-change positive">...</div>
+                </div>
+            </div>
+            <div class="content-section">
+                <div class="section-header">Recent Activity</div>
+                <div class="section-content">
+                    <p>....</p>
+                </div>
+            </div>
+{% endblock %}

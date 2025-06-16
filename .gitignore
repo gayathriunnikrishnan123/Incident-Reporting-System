@@ -1,0 +1,11 @@
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django specific
+*.sqlite3
+*.log
+*.pot
+*.pyc
