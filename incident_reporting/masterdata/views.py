@@ -12,7 +12,8 @@ from accounts.decorators import audit_trail_decorator
 @login_required
 @audit_trail_decorator
 def manage_departments(request):
-    departments = Department.objects.all()
+    departments = Department.objects.filter(is_deleted=False)
+
     form = DepartmentForm()
 
     if request.method == 'POST':
@@ -33,7 +34,7 @@ def manage_departments(request):
 @audit_trail_decorator
 def edit_department(request, pk):
     department = get_object_or_404(Department, pk=pk)
-    departments = Department.objects.all()
+    departments = Department.objects.filter(is_deleted=False)
     form = DepartmentForm(instance=department)
 
     if request.method == 'POST':
@@ -55,7 +56,8 @@ def edit_department(request, pk):
 @audit_trail_decorator
 def delete_department(request, pk):
     department = get_object_or_404(Department, pk=pk)
-    department.delete()
+    department.is_deleted = True
+    department.save()
     return redirect('manage_departments')
 
 
@@ -63,7 +65,7 @@ def delete_department(request, pk):
 @login_required
 @audit_trail_decorator
 def manage_divisions(request):
-    divisions = Division.objects.all()
+    divisions = Division.objects.filter(is_deleted=False)
     form = DivisionForm()
 
     if request.method == 'POST':
@@ -84,7 +86,7 @@ def manage_divisions(request):
 @audit_trail_decorator
 def edit_division(request, pk):
     division = get_object_or_404(Division, pk=pk)
-    divisions = Division.objects.all()
+    divisions = Division.objects.filter(is_deleted=False)
     form = DivisionForm(instance=division)
 
     if request.method == 'POST':
@@ -106,5 +108,6 @@ def edit_division(request, pk):
 @audit_trail_decorator
 def delete_division(request, pk):
     division = get_object_or_404(Division, pk=pk)
-    division.delete()
+    division.is_deleted = True
+    division.save()
     return redirect('manage_divisions')

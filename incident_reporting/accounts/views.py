@@ -132,21 +132,29 @@ def editUserView(request, userId):
 @audit_trail_decorator
 def deleteUserView(request, userId):
     userData = CustomUserProfile.objects.get(id=userId)
-    userData.delete()
+    userData.is_deleted = True
+    userData.save()
+    AuditLog.objects.create(
+        user_email=request.user.email,
+        function_name="deleteUserView",
+        action="Soft Delete",
+        path=request.path,
+        message=f"Soft deleted user: {userData.email}"
+    )
     return redirect("show-users")
 
 
 @login_required
 @audit_trail_decorator
 def userListView(request):
-    allUsers = CustomUserProfile.objects.all()
+    allUsers = CustomUserProfile.objects.filter(is_deleted=False)
     return render(request, "userMaster.html", {"users": allUsers})
 
 
 @login_required
 @audit_trail_decorator
 def roleView(request):
-    allRoles = Role.objects.all()
+    allRoles = Role.objects.filter(is_deleted=False)
     if request.method == "POST":
         form = RoleCreationForm(request.POST)
         if form.is_valid():
@@ -166,7 +174,7 @@ def roleView(request):
 @audit_trail_decorator
 def editRoleView(request, roleId):
     role = get_object_or_404(Role, id=roleId)
-    allRoles = Role.objects.all()
+    allRoles = Role.objects.filter(is_deleted=False)
     if request.method == "POST":
         form = RoleCreationForm(request.POST, instance=role)
         if form.is_valid():
@@ -187,14 +195,22 @@ def editRoleView(request, roleId):
 @audit_trail_decorator
 def deleteRoleView(request, roleId):
     role = Role.objects.get(id=roleId)
-    role.delete()
+    role.is_deleted=True
+    role.save()
+    AuditLog.objects.create(
+        user_email=request.user.email,
+        function_name="deleteRoleView",
+        action="Soft Delete",
+        path=request.path,
+        message=f"Soft deleted role: {role.name}"
+    )
     return redirect("show-roles")
 
 
 @login_required
 @audit_trail_decorator
 def departmentProfileView(request):
-    allMappings = DepartmentProfile.objects.all()
+    allMappings = DepartmentProfile.objects.filter(is_deleted=False)
     if request.method == "POST":
         form = DepartmentProfileForm(request.POST)
         if form.is_valid():
@@ -213,7 +229,7 @@ def departmentProfileView(request):
 @audit_trail_decorator
 def departmentProfileEditView(request, mapId):
     map = get_object_or_404(DepartmentProfile, id=mapId)
-    allMappings = DepartmentProfile.objects.all()
+    allMappings = DepartmentProfile.objects.filter(is_deleted=False)
     if request.method == "POST":
         form = DepartmentProfileForm(request.POST, instance=map)
         if form.is_valid():
@@ -232,5 +248,13 @@ def departmentProfileEditView(request, mapId):
 @audit_trail_decorator
 def departmentProfileDeleteView(request, mapId):
     map = get_object_or_404(DepartmentProfile, id=mapId)
-    map.delete()
+    map.is_deleted=True
+    map.save()
+    AuditLog.objects.create(
+        user_email=request.user.email,
+        function_name="departmentProfileDeleteView",
+        action="Soft Delete",
+        path=request.path,
+        message=f"Soft deleted mapping: {map.user}-> {map.role}"
+    )
     return redirect("show-maps")
