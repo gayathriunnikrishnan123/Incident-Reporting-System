@@ -10,6 +10,8 @@ from accounts.forms import (
 )
 from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
 from accounts.decorators import audit_trail_decorator
+from masterdata.models import Department
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -258,3 +260,14 @@ def departmentProfileDeleteView(request, mapId):
         message=f"Soft deleted mapping: {map.user}-> {map.role}"
     )
     return redirect("show-maps")
+
+
+
+# for auto populating departments from division
+
+
+def get_departments_by_division(request):
+    division_id = request.GET.get("division_id")
+    departments = Department.objects.filter(division_id=division_id, is_deleted=False).values("id", "name")
+    print(list(departments))
+    return JsonResponse(list(departments), safe=False)

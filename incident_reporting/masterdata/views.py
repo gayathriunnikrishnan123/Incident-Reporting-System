@@ -3,7 +3,7 @@ from masterdata.models import Department, Division
 from masterdata.forms import DepartmentForm, DivisionForm
 from django.contrib.auth.decorators import login_required
 from accounts.decorators import audit_trail_decorator
-
+from django.http import JsonResponse
 
 
 
@@ -111,3 +111,14 @@ def delete_division(request, pk):
     division.is_deleted = True
     division.save()
     return redirect('manage_divisions')
+
+
+
+#  for dynamic data loading
+
+# @login_required
+# @audit_trail_decorator
+# def load_departments(request):
+#     division_id = request.GET.get('division_id')
+#     departments = Department.objects.filter(division_id=division_id).values('id', 'name')
+#     return JsonResponse(list(departments), safe=False)
