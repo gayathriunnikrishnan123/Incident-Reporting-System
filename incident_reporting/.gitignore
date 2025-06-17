@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -29,3 +30,16 @@ db.sqlite3
 # Media / Static
 media/
 staticfiles/
+=======
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django specific
+*.sqlite3
+*.log
+*.pot
+*.pyc
+>>>>>>> origin/sk

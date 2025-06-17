@@ -15,7 +15,7 @@
 </head>
 <body>
     
-    <div class="dashboard-container">
+<div class="dashboard-container">
     <!-- Sidebar Toggle Button (moved outside sidebar) -->
     
 
@@ -23,8 +23,8 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo">F</div>
-            <span style="font-weight: 600; color: #111827;">SK</span>
-            <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+            {% comment %} <span style="font-weight: 600; color: #111827;" id="lg2">SK</span> {% endcomment %}
+            <div class="sidebar-toggle" id="toggleSidebar" title="Toggle Sidebar">
                 <span id="toggle-icon">←</span>
             </div>
         </div>
@@ -103,19 +103,20 @@
     </div>
 </nav>
 
-        <!-- User Profile (moved to bottom via flex) -->
-        <div class="user-profile">
+        
+        {% comment %} <div class="user-profile">
             <div class="user-avatar">HN</div>
             <div class="user-info">
                 <h4>{{ request.user.get_full_name|default:request.user.fullname }}</h4>
-                <p>Admin Manager</p>
+                <p>{{ request.user.departmentprofile_set.first.role.name }}</p>
             </div>
-        </div>
+        </div> {% endcomment %}
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
         <header class="header">
+            <button class="mobile-sidebar-toggle" onclick="toggleMobileSidebar()">☰</button>
             <h1>{% block page_title %}Dashboard{% endblock %}</h1>
             <div class="header-actions">
                 <span class="time-period">{% block time_period %}{% now "M d, Y" %}{% endblock %}</span>
@@ -130,127 +131,103 @@
             {% endblock content %}
         </div>
     </main>
+    
 </div>
 
+<div class="sidebar-overlay" id="sidebarOverlay" style="display: none;"></div>
 
-    {% comment %} <script>
-        // Minimal JavaScript for basic functionality
-        function toggleDarkMode() {
-            // Add your dark mode toggle logic here
-            alert('Dark mode toggle - implement as needed');
-        }
-
-        // Mobile menu toggle (if needed)
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('open');
-        }
-
-        // Add mobile menu button if needed
-        if (window.innerWidth <= 768) {
-            const header = document.querySelector('.header');
-            const menuBtn = document.createElement('button');
-            menuBtn.innerHTML = '☰';
-            menuBtn.onclick = toggleSidebar;
-            menuBtn.style.cssText = 'background:none;border:none;font-size:20px;cursor:pointer;';
-            header.insertBefore(menuBtn, header.firstChild);
-        }
-
-        {% block extra_js %}{% endblock %}
-    </script> {% endcomment %}
     <script>
-        // Dark Mode Toggle
-        let isDarkMode = localStorage.getItem('darkMode') === 'true';
-        
-        function toggleDarkMode() {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('dark-mode', isDarkMode);
-            localStorage.setItem('darkMode', isDarkMode);
-            
-            // Update dark mode icon
-            const darkModeIcon = document.querySelector('a[onclick*="toggleDarkMode"] .nav-icon');
-            if (darkModeIcon) {
-                darkModeIcon.textContent = isDarkMode ? '☀️' : '🌙';
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = document.getElementById("sidebar");
+            const icon = document.getElementById("toggle-icon");
+            const toggleBtn = document.getElementById("toggleSidebar");
+
+            // Restore minimized state from localStorage
+            const isMinimized = localStorage.getItem("sidebarMinimized") === "true";
+            if (isMinimized) {
+                sidebar.classList.add("minimized");
+                icon.textContent = '→';
             }
-        }
 
-        // Initialize dark mode on page load
-        if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-            const darkModeIcon = document.querySelector('a[onclick*="toggleDarkMode"] .nav-icon');
-            if (darkModeIcon) {
-                darkModeIcon.textContent = '☀️';
+            if (toggleBtn) {
+                toggleBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    sidebar.classList.toggle("minimized");
+                    const minimizedNow = sidebar.classList.contains("minimized");
+                    localStorage.setItem("sidebarMinimized", minimizedNow);
+                    icon.textContent = minimizedNow ? '→' : '←';
+                    });
+                }
+            });
+
+
+            let isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                const darkIcon = document.querySelector('a[onclick*="toggleDarkMode"] .nav-icon');
+                if (darkIcon) darkIcon.textContent = '☀️';
             }
-        }
 
-        // Sidebar Toggle
-        {% comment %} let isSidebarMinimized = localStorage.getItem('sidebarMinimized') === 'true';
-        
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.querySelector('.main-content');
-            const toggleIcon = document.getElementById('toggle-icon');
-            
-            isSidebarMinimized = !isSidebarMinimized;
-            
-            if (isSidebarMinimized) {
-                sidebar.classList.add('minimized');
-                toggleIcon.textContent = '→';
-                mainContent.style.marginLeft = '70px';
-            } else {
-                sidebar.classList.remove('minimized');
-                toggleIcon.textContent = '←';
-                mainContent.style.marginLeft = '280px';
+            const darkToggle = document.querySelector('a[onclick*="toggleDarkMode"]');
+            if (darkToggle) {
+                darkToggle.addEventListener("click", function () {
+                    isDarkMode = !isDarkMode;
+                    document.body.classList.toggle("dark-mode", isDarkMode);
+                    localStorage.setItem("darkMode", isDarkMode);
+                    const darkIcon = document.querySelector('a[onclick*="toggleDarkMode"] .nav-icon');
+                    if (darkIcon) darkIcon.textContent = isDarkMode ? '☀️' : '🌙';
+                });
             }
-            
-            localStorage.setItem('sidebarMinimized', isSidebarMinimized);
-        } {% endcomment %}
+    </script>
 
-        // Initialize sidebar state on page load
-        {% comment %} if (isSidebarMinimized) {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.querySelector('.main-content');
-            const toggleIcon = document.getElementById('toggle-icon');
-            
-            sidebar.classList.add('minimized');
-            toggleIcon.textContent = '→';
-            mainContent.style.marginLeft = '70px';
-        } {% endcomment %}
-
-        // Mobile menu toggle
-        function toggleMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('open');
-        }
-        
-        function toggleSidebar() {
+    <script>
         const sidebar = document.getElementById('sidebar');
-        sidebar.classList.toggle('minimized');
+        const overlay = document.getElementById('sidebarOverlay');
 
-        const icon = document.getElementById('toggle-icon');
-        icon.textContent = sidebar.classList.contains('minimized') ? '→' : '←';
-    }
-
-        // Mobile menu setup
-        if (window.innerWidth <= 768) {
-            const header = document.querySelector('.header');
-            const menuBtn = document.createElement('button');
-            menuBtn.innerHTML = '☰';
-            menuBtn.onclick = toggleMobileSidebar;
-            menuBtn.style.cssText = 'background:none;border:none;font-size:20px;cursor:pointer;margin-right:15px;';
-            header.insertBefore(menuBtn, header.firstChild);
+        // Toggle sidebar for mobile
+        function toggleMobileSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('visible');
         }
 
-        // Handle window resize
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                const sidebar = document.getElementById('sidebar');
-                sidebar.classList.remove('open');
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('visible');
+        }
+
+        overlay.addEventListener('click', closeSidebar);
+
+
+        document.addEventListener('click', function(event) {
+            const isSidebarOpen = sidebar.classList.contains('open');
+
+
+            if (
+                isSidebarOpen &&
+                !sidebar.contains(event.target) &&
+                !event.target.classList.contains('mobile-sidebar-toggle')
+            ) {
+                closeSidebar();
             }
         });
 
         
     </script>
-    {% block extra_js %}{% endblock %}
+
+    <script>
+        const profileToggle = document.getElementById('profileToggle');
+        const profileMenu = document.getElementById('profileMenu');
+
+        profileToggle.addEventListener('click', () => {
+            profileMenu.style.display = profileMenu.style.display === 'flex' ? 'none' : 'flex';
+        });
+    </script>
+
+
+
+    {% block extra_js %}
+    
+    {% endblock %}
+
 </body>
 </html>

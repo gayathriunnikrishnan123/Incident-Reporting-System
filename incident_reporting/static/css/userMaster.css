@@ -26,7 +26,7 @@ table.dataTable thead {
 
 table.dataTable thead th {
     padding: 12px;
-    text-align: left !;
+    text-align: left;
     font-weight: 500 !important; 
 }
 
@@ -36,9 +36,14 @@ table.dataTable tbody td {
     border-bottom: 1px solid #eee;
 }
 
+table.dataTable tbody td:hover{
+    background-color: #f4f6fa !important;
+    color: black !important;
+}
 
 table.dataTable tbody tr:hover {
-    background-color: #f4f6fa;
+    background-color: #f4f6fa !important;
+    color: black !important;
 }
 
 
@@ -92,6 +97,11 @@ table.dataTable tbody tr:hover {
     cursor: pointer !important;
     font-size: 12px;
 }
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    color: #333 !important;
+}
+
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.current {
     background: #667eea;

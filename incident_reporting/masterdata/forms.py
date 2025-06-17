@@ -3,7 +3,7 @@ from masterdata.models import Department, Division
 
 class DepartmentForm(forms.ModelForm):
     division = forms.ModelChoiceField(
-        queryset=Division.objects.all(),
+        queryset=Division.objects.filter(is_deleted=False),
         empty_label="Select Division",
         widget=forms.Select(attrs={'class': 'form-control'})
     )

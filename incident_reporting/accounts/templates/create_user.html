@@ -131,3 +131,53 @@
 
 {% endblock %}
 
+{% block extra_js %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function(){
+
+        $("#id_default_department").prop("disabled", true);
+
+
+        $("#id_default_division").change(function () {
+            var divisionId = $(this).val();
+            console.log(divisionId);
+
+            if (divisionId) {
+                $.ajax({
+                    url: "{% url 'ajax_load_departments' %}",
+                    data: {
+                        division_id: divisionId
+                    },
+                    success: function (data) {
+                        var departmentSelect = $("#id_default_department");
+                        departmentSelect.empty();
+                        departmentSelect.append('<option value="">Select Department</option>');
+                        $.each(data, function (index, dept) {
+                            departmentSelect.append('<option value="' + dept.id + '">' + dept.name + '</option>');
+                        });
+                        departmentSelect.prop("disabled", false); // Enable when populated
+                    },
+                    error: function () {
+                        console.error("Failed to fetch departments");
+                    }
+                });
+            } else {
+
+                $("#id_default_department").empty();
+                $("#id_default_department").append('<option value="">Select Department</option>');
+                $("#id_default_department").prop("disabled", true);
+            }
+        });
+    });
+</script>
+
+
+
+
+
+
+{% endblock extra_js %}
+
