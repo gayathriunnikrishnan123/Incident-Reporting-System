@@ -8,8 +8,8 @@ from accounts.forms import (
     RoleCreationForm,
     DepartmentProfileForm,
 )
-from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
-from accounts.decorators import audit_trail_decorator
+from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile, Menu
+from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department
 from django.http import JsonResponse
 
@@ -31,28 +31,63 @@ from django.http import JsonResponse
 
 #     return render(request, "login.html")
 
+ROLE_MENUS = {
+    'Admin': [
+        {'name': 'Dashboard', 'url': 'dashboard', 'icon': '📊'},
+        {'name': 'Master Data', 'url': 'system-config', 'icon': '🛍️'},
+        {'name': 'User Management', 'url': 'user-management', 'icon': '👥'},
+        {'name': 'All Incidents', 'url': 'all-incidents', 'icon': '📦'},
+        {'name': 'Tracking', 'url': 'auditlog', 'icon': '📍'},
+    ],
+    'Reviewer': [
+        {'name': 'Dashboard', 'url': 'dashboard', 'icon': '📊'},
+        {'name': 'All Incidents', 'url': 'all-incidents', 'icon': '📦'},
+        {'name': 'Tracking', 'url': 'auditlog', 'icon': '📍'},
+    ],
+    'Responder': [
+        {'name': 'Dashboard', 'url': 'dashboard', 'icon': '📊'},
+        {'name': 'All Incidents', 'url': 'all-incidents', 'icon': '📦'},
+    ],
+}
+
+
 
 @login_required
 @audit_trail_decorator
+@role_level_required(3)
 def dashboardView(request):
+    loggedInUser=request.user
     print(request.session)
+    if 'role_name' not in request.session:
+        depart = DepartmentProfile.objects.filter(user=loggedInUser,is_active=True,is_deleted=False,role__is_deleted=False).order_by('role__level').first()
+        if depart:
+            request.session['role_name'] = depart.role.name
+            request.session['role_level'] = depart.role.level
+
+    role = request.session.get('role_name', None)
+    request.session['menus']=ROLE_MENUS.get(role,[])
+
+
     return render(request, "dashboard/dashboard.html")
 
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def systemConfigView(request):
     return render(request, "dashboard/systemConfig.html")
 
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def userManagementView(request):
     return render(request, "dashboard/userManagement.html")
 
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def auditLogView(request):
     logs = AuditLog.objects.all()
     return render(request, "dashboard/auditlog.html", {"logs": logs})
@@ -60,6 +95,14 @@ def auditLogView(request):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(3)
+def allIncidentsView(request):
+    return render(request, 'dashboard/all_incidents.html')
+
+
+@login_required
+@audit_trail_decorator
+@role_level_required(1)
 def createUserView(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
@@ -83,6 +126,7 @@ def createUserView(request):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def editUserView(request, userId):
     userData = get_object_or_404(CustomUserProfile, id=userId)
     if request.method == "POST":
@@ -132,6 +176,7 @@ def editUserView(request, userId):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def deleteUserView(request, userId):
     userData = CustomUserProfile.objects.get(id=userId)
     userData.is_deleted = True
@@ -148,6 +193,7 @@ def deleteUserView(request, userId):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def userListView(request):
     allUsers = CustomUserProfile.objects.filter(is_deleted=False)
     return render(request, "userMaster.html", {"users": allUsers})
@@ -155,6 +201,7 @@ def userListView(request):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def roleView(request):
     allRoles = Role.objects.filter(is_deleted=False)
     if request.method == "POST":
@@ -174,6 +221,7 @@ def roleView(request):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def editRoleView(request, roleId):
     role = get_object_or_404(Role, id=roleId)
     allRoles = Role.objects.filter(is_deleted=False)
@@ -195,6 +243,7 @@ def editRoleView(request, roleId):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def deleteRoleView(request, roleId):
     role = Role.objects.get(id=roleId)
     role.is_deleted=True
@@ -211,6 +260,7 @@ def deleteRoleView(request, roleId):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def departmentProfileView(request):
     allMappings = DepartmentProfile.objects.filter(is_deleted=False)
     if request.method == "POST":
@@ -229,6 +279,7 @@ def departmentProfileView(request):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def departmentProfileEditView(request, mapId):
     map = get_object_or_404(DepartmentProfile, id=mapId)
     allMappings = DepartmentProfile.objects.filter(is_deleted=False)
@@ -248,6 +299,7 @@ def departmentProfileEditView(request, mapId):
 
 @login_required
 @audit_trail_decorator
+@role_level_required(1)
 def departmentProfileDeleteView(request, mapId):
     map = get_object_or_404(DepartmentProfile, id=mapId)
     map.is_deleted=True
@@ -271,3 +323,8 @@ def get_departments_by_division(request):
     departments = Department.objects.filter(division_id=division_id, is_deleted=False).values("id", "name")
     print(list(departments))
     return JsonResponse(list(departments), safe=False)
+
+
+
+
+

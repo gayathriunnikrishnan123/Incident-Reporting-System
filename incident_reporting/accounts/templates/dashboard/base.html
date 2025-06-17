@@ -33,7 +33,7 @@
             <div class="user-avatar">SS</div>
             <div class="user-info">
                 <h4>{{ request.user.get_full_name|default:request.user.fullname }}</h4>
-                <p>{{ request.user.departmentprofile_set.first.role.name }}</p>
+                <p>{{ request.session.role_name}}</p>
             </div>
         </div>
         
@@ -44,46 +44,57 @@
         </div>
 
         <nav class="sidebar-nav">
-            <!-- Marketing Section -->
+
             <div class="nav-section">
+
                 <div class="nav-section-title">Essentials</div>
-                <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                    <div class="nav-icon">📊</div>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{% url 'system-config' %}" class="nav-item {% if request.resolver_match.url_name == 'system-config' %}active{% endif %}">
-                    <div class="nav-icon">🛍️</div>
-                    <span>Master Data</span>
-                </a>
-                <a href="{% url 'user-management' %}" class="nav-item {% if request.resolver_match.url_name == 'user-management' %}active{% endif %}">
-                    <div class="nav-icon">👥</div>
-                    <span>User Management</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <div class="nav-icon">📦</div>
-                    <span>All incidents</span>
-                </a>
-                <a href="{% url 'auditlog' %}" class="nav-item {% if request.resolver_match.url_name == 'auditlog' %}active{% endif %}">
-                    <div class="nav-icon">📍</div>
-                    <span>Tracking</span>
-                </a>
+
+                    {% for menu in request.session.menus %}
+
+                        <a href="{% url menu.url %}" class="nav-item {% if request.resolver_match.url_name == menu.url %}active{% endif %}">
+                            <div class="nav-icon">{{menu.icon}}</div>
+                            <span>{{menu.name}}</span>
+                        </a>
+                    
+                    {% endfor %}
+
+                    {% comment %} <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <div class="nav-icon">📊</div>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="{% url 'system-config' %}" class="nav-item {% if request.resolver_match.url_name == 'system-config' %}active{% endif %}">
+                        <div class="nav-icon">🛍️</div>
+                        <span>Master Data</span>
+                    </a>
+                    <a href="{% url 'user-management' %}" class="nav-item {% if request.resolver_match.url_name == 'user-management' %}active{% endif %}">
+                        <div class="nav-icon">👥</div>
+                        <span>User Management</span>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <div class="nav-icon">📦</div>
+                        <span>All incidents</span>
+                    </a>
+                    <a href="{% url 'auditlog' %}" class="nav-item {% if request.resolver_match.url_name == 'auditlog' %}active{% endif %}">
+                        <div class="nav-icon">📍</div>
+                        <span>Tracking</span>
+                    </a> {% endcomment %}
                 
             </div>
 
-            <!-- Report Section -->
+            
             <div class="nav-section">
                 <div class="nav-section-title">Others</div>
-                <a href="#" class="nav-item">
-                    <div class="nav-icon">📋</div>
-                    <span>Reports</span>
-                </a>
-                <a href="#" class="nav-item">
-                    <div class="nav-icon">💰</div>
-                    <span>Op2</span>
-                </a>
+                    <a href="#" class="nav-item">
+                        <div class="nav-icon">📋</div>
+                        <span>Reports</span>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <div class="nav-icon">💰</div>
+                        <span>Op2</span>
+                    </a>
             </div>
 
-            <!-- System Section -->
+        
             <div class="nav-section">
                 <div class="nav-section-title">System</div>
                 <a href="#" class="nav-item" onclick="toggleDarkMode()">

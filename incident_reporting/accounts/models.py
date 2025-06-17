@@ -103,3 +103,22 @@ class AuditLog(models.Model):
     class Meta:
         db_table = "Audit_Log"
         ordering = ["-timestamp"]
+
+
+class Menu(models.Model):
+    name = models.CharField(max_length=100)
+    url_name = models.CharField(max_length=100) 
+    icon = models.CharField(max_length=100, blank=True)  
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.name
+
+class RoleMenuMapping(models.Model):
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
+    menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ("role", "menu")

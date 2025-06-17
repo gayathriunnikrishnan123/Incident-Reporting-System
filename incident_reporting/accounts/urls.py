@@ -20,6 +20,7 @@ urlpatterns = [
     path('dashboard/', views.dashboardView, name='dashboard'),
     path('systemconfig/', views.systemConfigView, name='system-config'),
     path('userManagement/', views.userManagementView, name='user-management'),
+    path('allIncidents/', views.allIncidentsView, name='all-incidents'),
 
     path('create-user/',views.createUserView,name='create-user'),
     path('edit-user/<int:userId>/',views.editUserView,name='edit-user'),
