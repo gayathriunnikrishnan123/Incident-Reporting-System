@@ -12,8 +12,7 @@ from django.http import JsonResponse
 @login_required
 @audit_trail_decorator
 def manage_departments(request):
-    departments = Department.objects.filter(is_deleted=False)
-
+    departments = Department.objects.filter(is_deleted=False)  # Filter soft-deleted
     form = DepartmentForm()
 
     if request.method == 'POST':
@@ -34,7 +33,7 @@ def manage_departments(request):
 @audit_trail_decorator
 def edit_department(request, pk):
     department = get_object_or_404(Department, pk=pk)
-    departments = Department.objects.filter(is_deleted=False)
+    departments = Department.objects.all()
     form = DepartmentForm(instance=department)
 
     if request.method == 'POST':
@@ -55,7 +54,7 @@ def edit_department(request, pk):
 @login_required
 @audit_trail_decorator
 def delete_department(request, pk):
-    department = get_object_or_404(Department, pk=pk)
+    department = get_object_or_404(Department, pk=pk, is_deleted=False)
     department.is_deleted = True
     department.save()
     return redirect('manage_departments')
@@ -86,7 +85,7 @@ def manage_divisions(request):
 @audit_trail_decorator
 def edit_division(request, pk):
     division = get_object_or_404(Division, pk=pk)
-    divisions = Division.objects.filter(is_deleted=False)
+    divisions = Division.objects.all()
     form = DivisionForm(instance=division)
 
     if request.method == 'POST':
@@ -107,18 +106,7 @@ def edit_division(request, pk):
 @login_required
 @audit_trail_decorator
 def delete_division(request, pk):
-    division = get_object_or_404(Division, pk=pk)
+    division = get_object_or_404(Division, pk=pk, is_deleted=False)
     division.is_deleted = True
     division.save()
     return redirect('manage_divisions')
-
-
-
-#  for dynamic data loading
-
-# @login_required
-# @audit_trail_decorator
-# def load_departments(request):
-#     division_id = request.GET.get('division_id')
-#     departments = Department.objects.filter(division_id=division_id).values('id', 'name')
-#     return JsonResponse(list(departments), safe=False)

@@ -33,13 +33,17 @@ class UserCreationForm(forms.Form):
     )
 
     default_division = forms.ModelChoiceField(
-        queryset=Division.objects.filter(is_deleted=False), required=False, empty_label="Select Division"
+        queryset=Division.objects.filter(is_deleted=False),  
+        required=False,
+        empty_label="Select Division",
+        widget=forms.Select(attrs={'id': 'id_default_division'})
     )
 
     default_department = forms.ModelChoiceField(
-        queryset=Department.objects.filter(is_deleted=False),
+        queryset=Department.objects.filter(is_deleted=False),  
         required=False,
         empty_label="Select Department",
+        widget=forms.Select(attrs={'id': 'id_default_department'})
     )
 
     password = forms.CharField(
@@ -113,12 +117,15 @@ class InternalUserEditForm(forms.Form):
         ),
     )
     default_department = forms.ModelChoiceField(
-        queryset=Department.objects.filter(is_deleted=False),
+        queryset=Department.objects.filter(is_deleted=False),  
         required=False,
-        empty_label="Select Department",
+        empty_label="Select Department"
     )
+
     default_division = forms.ModelChoiceField(
-        queryset=Division.objects.filter(is_deleted=False), required=False, empty_label="Select Division"
+        queryset=Division.objects.filter(is_deleted=False),  
+        required=False,
+        empty_label="Select Division"
     )
     is_active = forms.BooleanField(required=False)
     is_staff = forms.BooleanField(required=False)
@@ -180,19 +187,21 @@ class RoleCreationForm(forms.ModelForm):
 
 class DepartmentProfileForm(forms.ModelForm):
     user = forms.ModelChoiceField(
-        queryset=CustomUserProfile.objects.filter(is_deleted=False), empty_label="Select User"
+        queryset=CustomUserProfile.objects.all(), empty_label="Select User"
     )
     division = forms.ModelChoiceField(
-        queryset=Division.objects.filter(is_deleted=False), required=False, empty_label="Select Division"
+        queryset=Division.objects.filter(is_deleted=False),  
+        required=False,
+        empty_label="Select Division"
     )
 
     department = forms.ModelChoiceField(
-        queryset=Department.objects.filter(is_deleted=False),
+        queryset=Department.objects.filter(is_deleted=False),  
         required=False,
-        empty_label="Select Department",
+        empty_label="Select Department"
     )
     role = forms.ModelChoiceField(
-        queryset=Role.objects.filter(is_deleted=False), empty_label="Select Role"
+        queryset=Role.objects.all(), empty_label="Select Role"
     )
 
     class Meta:

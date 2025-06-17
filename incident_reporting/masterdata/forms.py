@@ -3,19 +3,23 @@ from masterdata.models import Department, Division
 
 class DepartmentForm(forms.ModelForm):
     division = forms.ModelChoiceField(
-        queryset=Division.objects.filter(is_deleted=False),
+        queryset=Division.objects.filter(is_deleted=False),  # Only active divisions
         empty_label="Select Division",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+
     class Meta:
         model = Department
         fields = ['name', 'division', 'description']
         widgets = {
-            'description': forms.TextInput(attrs={
-                'class': 'form-control',
-            }),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ensures dropdown does not show soft-deleted divisions
+        self.fields['division'].queryset = Division.objects.filter(is_deleted=False)
 
 class DivisionForm(forms.ModelForm):
 

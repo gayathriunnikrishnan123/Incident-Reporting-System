@@ -5,4 +5,3 @@ from masterdata.models import Department, Division
 
 admin.site.register(Department)
 admin.site.register(Division)
-
