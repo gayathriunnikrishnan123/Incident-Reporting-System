@@ -19,6 +19,7 @@ urlpatterns = [
     path('dashboard/', views.dashboardView, name='dashboard'),
     path('systemconfig/', views.systemConfigView, name='system-config'),
     path('userManagement/', views.userManagementView, name='user-management'),
+    path('allIncidents/', views.allIncidentsView, name='all-incidents'),
 
     path('create-user/',views.createUserView,name='create-user'),
     path('ajax/get-departments/', views.get_departments_by_division, name='ajax-get-departments'),
