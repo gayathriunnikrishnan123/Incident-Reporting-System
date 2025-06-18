@@ -1,0 +1,133 @@
+/* Enhanced Incident Report Form CSS */
+
+.incident-report-screen {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #f0f8ff, #dbeafe);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.incident-report-card {
+  padding: 30px 70px 30px 30px;
+  background: #ffffffcc;
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(59, 130, 246, 0.25);
+  max-width: 700px;
+  width: 100%;
+  transition: transform 0.3s ease;
+}
+
+
+.incident-report-card:hover {
+  transform: translateY(-5px);
+}
+
+.incident-report-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.incident-report-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 1px;
+  margin-bottom: 0.3rem;
+  text-shadow: 1px 1px 2px #a0b4ff;
+}
+
+.incident-report-header p {
+  font-size: 1rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.form-group {
+  margin-bottom: 1.8rem;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group select,
+.form-group textarea,
+.form-group input[type="date"],
+.form-group input[type="file"] {
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #1e293b;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.05);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+  background-color: #ffffff;
+}
+
+.form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.error-message {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 0.3rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  border: none;
+  border-radius: 14px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 8px 15px rgba(37, 99, 235, 0.4);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.btn-submit:hover {
+  background: linear-gradient(90deg, #1e40af, #2563eb);
+  box-shadow: 0 12px 20px rgba(30, 64, 175, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .incident-report-card {
+    padding: 2rem 2rem 1.5rem;
+  }
+
+  .incident-report-header h1 {
+    font-size: 2rem;
+  }
+}

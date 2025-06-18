@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Incident Report Form</title>
+  <link rel="stylesheet" href="{% static 'css/incident.css' %}" />
+</head>
+<body>
+  <div class="incident-report-screen">
+    <div class="incident-report-card">
+      <div class="incident-report-header">
+        <h1>Report an Incident</h1>
+        <p>Please fill in the details below</p>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+              <div class="error-message">{{ field.errors }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn-submit">Submit Incident</button>
+      </form>
+
+    </div>
+  </div>
+</body>
+</html>

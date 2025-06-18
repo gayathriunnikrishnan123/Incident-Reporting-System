@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from masterdata.models import Department, Division
-from masterdata.forms import DepartmentForm, DivisionForm
+from masterdata.models import Department, Division, IncidentSeverity, IncidentStatus
+from masterdata.forms import DepartmentForm, DivisionForm, IncidentSeverityForm, IncidentStatusForm
 from django.contrib.auth.decorators import login_required
 from accounts.decorators import audit_trail_decorator
 from django.http import JsonResponse
@@ -110,3 +110,80 @@ def delete_division(request, pk):
     division.is_deleted = True
     division.save()
     return redirect('manage_divisions')
+
+
+def manage_severity(request):
+    severity=IncidentSeverity.objects.filter(is_deleted=False)
+    if request.method=='POST':
+        form=IncidentSeverityForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_severity')
+    else:
+        form=IncidentSeverityForm()
+    return render(request,'severity.html',{'form':form,'severities':severity,'edit_mode':False})
+
+
+def edit_severity(request,pk):
+    severity = get_object_or_404(IncidentSeverity, pk=pk)
+    severities = IncidentSeverity.objects.filter(is_deleted=False)
+    form = IncidentSeverityForm(instance=severity)
+
+    if request.method == 'POST':
+        form = IncidentSeverityForm(request.POST, instance=severity)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_severity')
+
+    return render(request,'severity.html',{'form':form,'severities':severities,'edit_mode':True})
+
+def delete_severity(request,pk):
+    severity = get_object_or_404(IncidentSeverity, pk=pk)
+    severity.is_deleted = True
+    severity.save()
+    return redirect('manage_severity')
+
+
+def manage_status(request):
+    statuses = IncidentStatus.objects.filter(is_deleted=False)
+
+    if request.method == 'POST':
+        form = IncidentStatusForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_status')
+    else:
+        form = IncidentStatusForm()
+
+    return render(request, 'status.html', {
+        'form': form,
+        'statuses': statuses,
+        'edit_mode': False,
+    })
+
+
+def edit_status(request, pk):
+    status = get_object_or_404(IncidentStatus, pk=pk)
+    statuses = IncidentStatus.objects.filter(is_deleted=False)
+
+    if request.method == 'POST':
+        form = IncidentStatusForm(request.POST, instance=status)
+        if form.is_valid():
+            form.save()
+            return redirect('manage_status')
+    else:
+        form = IncidentStatusForm(instance=status)
+
+    return render(request, 'status.html', {
+        'form': form,
+        'statuses': statuses,
+        'edit_mode': True,
+        'edit_id': pk,
+    })
+
+
+def delete_status(request, pk):
+    status = get_object_or_404(IncidentStatus, pk=pk)
+    status.is_deleted = True
+    status.save()
+    return redirect('manage_status')

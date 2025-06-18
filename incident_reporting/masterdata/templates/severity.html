@@ -1,0 +1,151 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Severity{% endblock %}
+{% block page_title %}Create severity{% endblock %}
+
+{% block headersPart %}
+    <link rel="stylesheet" href="{% static 'css/user_form.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/userMaster.css' %}">
+
+        <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+    <!-- jQuery (Required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+{% endblock headersPart %}
+
+
+
+{% block content %}
+
+
+<div class="mainCont">
+    <div class="form-container" >
+
+        <form method="post"  id="role-form">
+            {% csrf_token %}
+
+            <!-- Display form errors -->
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {% for error in form.non_field_errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+
+            <div class="form-group">
+                <label for="{{ form.level.id_for_label }}" class="form-label">Level</label>
+                {{ form.level }}
+                {% if form.level.errors %}
+                    {% for error in form.level.errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    {% for error in form.description.errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.weight.id_for_label }}" class="form-label">Weight</label>
+                {{ form.weight }}
+                {% if form.weight.errors %}
+                    {% for error in form.weight.errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            {% comment %} <button type="submit" class="submit-btn">
+                Create role
+            </button> {% endcomment %}
+            {% if edit_mode %}
+                <button type="submit" class="submit-btn">Update Severity</button>
+            {% else %}
+                <button type="submit" class="submit-btn">Create Severity</button>
+            {% endif %}
+            <button type="reset" class="reset-btn">
+                Reset
+            </button>
+        </form>
+    </div>
+
+
+    <div class="table-wrapper">
+        <table id="userTable" class="display responsive nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Severity</th>
+                    <th>Description</th>
+                    <th>Weightage</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sev in severities %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ sev.level }}</td>
+                    <td>{{ sev.description }}</td>
+                    <td>{{ sev.weight }}</td>
+                    <td>
+
+                        <a href="{% url 'edit_severity' sev.id %}"class="action-btn edit-btn">Edit</a>
+                        <form method="post" action="{% url 'delete_severity' sev.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn delete-btn"
+                                onclick="return confirm('Are you sure you want to delete this level?');">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+
+    {% comment %} <script src="{% static 'js/user_form.js' %}"></script> {% endcomment %}
+
+
+{% endblock %}
+
+{% block extra_js %}
+
+    {% comment %} <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script> {% endcomment %}
+
+    <script>
+        $(document).ready(function () {
+            $('#userTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                lengthMenu: [3, 10, 25, 50],
+                lengthChange: true,
+                searching: true,
+                ordering: true
+            });
+        });
+    </script>
+
+{% endblock extra_js %}

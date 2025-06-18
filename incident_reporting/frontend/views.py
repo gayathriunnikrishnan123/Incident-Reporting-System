@@ -5,3 +5,8 @@ from accounts.decorators import audit_trail_decorator
 @audit_trail_decorator
 def homePage(request):
     return render(request,'home.html')
+
+
+@audit_trail_decorator
+def IncidenthomePage(request):
+    return render(request,'Incidenthome.html')

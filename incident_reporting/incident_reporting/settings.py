@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'frontend',
     'masterdata',
-    'incident'
+    'incidents',
 ]
 
 MIDDLEWARE = [

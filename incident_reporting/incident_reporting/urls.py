@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('masterdata/', include('masterdata.urls')),
+    path('Incidents/', include('incidents.urls')),
 ]
 
 
