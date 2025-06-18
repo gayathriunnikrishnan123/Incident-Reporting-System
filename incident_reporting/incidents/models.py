@@ -40,3 +40,18 @@ class Incident(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
+
+
+
+class IncidentAttachment(models.Model):
+    incident = models.ForeignKey(Incident, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to='incident_attachments/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Attachment for {self.incident.incident_token}"

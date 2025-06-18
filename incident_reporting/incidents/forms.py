@@ -2,6 +2,11 @@ from django import forms
 from incidents.models import Incident
 
 class IncidentForm(forms.ModelForm):
+    file = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        label="Attach files (optional)"
+    )
     class Meta:
         model = Incident
         fields = [

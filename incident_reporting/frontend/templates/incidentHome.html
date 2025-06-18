@@ -1,0 +1,85 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Reporting System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="container">
+            <h1 class="logo">IncidentReport</h1>
+            <nav>
+                <ul class="nav-links">
+                    {% comment %} Add nav items if needed {% endcomment %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <h2>Welcome to the Incident Reporting Portal
+                    {% if request.user.is_authenticated %}
+                    , {{ request.user.fullname }}
+                    {% endif %}</h2>
+                    <p>
+                        Quickly report, track, and follow up on incidents with ease and efficiency.
+                    </p>
+                    <div class="hero-buttons">
+                        {% if request.user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">Go to Dashboard</a>
+                            <a href="{% url 'submit_incident' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">Report New Incident</a>
+                            <a href="#" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">View My Reports</a>
+                        {% else %}
+                            <a href="{% url 'submit_incident' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">Report Incidents</a>
+                            <a href="{% url 'get_incidentby_token' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">View Incidents</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="{% static 'images/home2.png' %}" alt="Incident Reporting">
+                </div>
+            </div>
+        </section>
+
+        <section class="features">
+            <div class="container">
+                <div class="feature-card">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Quick Reporting</h3>
+                    <p>Log incidents in just a few clicks with our intuitive interface.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-lock"></i>
+                    <h3>Secure Submissions</h3>
+                    <p>All reports are encrypted and securely stored.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Track Progress</h3>
+                    <p>Follow up on incident status and resolutions in real-time.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Incident Reporting System. All rights reserved.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin"></i></a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
