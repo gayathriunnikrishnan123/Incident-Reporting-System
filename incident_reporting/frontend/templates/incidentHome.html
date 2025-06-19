@@ -36,7 +36,7 @@
                         {% if request.user.is_authenticated %}
                             <a href="{% url 'dashboard' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">Go to Dashboard</a>
                             <a href="{% url 'submit_incident' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">Report New Incident</a>
-                            <a href="#" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">View My Reports</a>
+                            <a href="{% url "get_incidentby_token" %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">View My Reports</a>
                         {% else %}
                             <a href="{% url 'submit_incident' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">Report Incidents</a>
                             <a href="{% url 'get_incidentby_token' %}" class="btn btn-primary" style="background-color:#007bff !important; color:white !important;">View Incidents</a>

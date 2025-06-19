@@ -6,7 +6,8 @@
 
 body {
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  /* background: linear-gradient(135deg, #f5f7fa, #c3cfe2); */
+  background: linear-gradient(135deg, #5334dade 0%, #ec42f1 100%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -16,7 +17,8 @@ body {
 }
 .navbar {
   width: 100%;
-  background: white;
+  background: #5334dade;
+  /* background: linear-gradient(135deg, #5334dade 0%, #ec42f1 100%); */
   padding: 15px 0;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   position: sticky;
@@ -27,7 +29,7 @@ body {
 .navbar .logo {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #4a89dc;
+    color: #ffffff;
     padding: 5px 20px;
 }
 .form-wrapper {
@@ -37,6 +39,7 @@ body {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 600px;
+  margin-bottom: 40px;
 }
 
 .form-wrapper h2 {

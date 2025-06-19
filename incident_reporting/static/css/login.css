@@ -7,6 +7,8 @@
 body {
     font-family: "Poppins", sans-serif;
     background-color: #f0f8ff;  /* AliceBlue background */
+    background: linear-gradient(135deg, #5334dade 0%, #ec42f1 100%);
+    background: linear-gradient(135deg, #1e3c72 0%, #982a8f 100%);
     color: #333;
     line-height: 1.6;
 }

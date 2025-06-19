@@ -22,11 +22,18 @@ def track_incident_by_token(request):
 
         if not incident:
             return render(request, "incident_tracking.html", {"error": "No incident found for the provided token."})
-        return render(request, "incident_tracking.html", {"incident": incident})
+        return redirect('detailsby_token',token=token)
     
     return render(request, "incident_tracking.html")
 
 
+
+def incident_details_by_token(request,token):
+    incident_details=get_object_or_404(Incident, incident_token=token, is_deleted=False)
+    attachments=incident_details.attachments.all()
+    for i in attachments:
+        print(i)
+    return render(request,"incident_details.html",{'incident_details':incident_details,'attachments':attachments})
 
 
 
@@ -85,4 +92,5 @@ def submit_incident(request):
 
 
 def incident_success(request, token):
-    return render(request, 'success.html', {'token': token})
+    incident = get_object_or_404(Incident, incident_token=token, is_deleted=False)
+    return render(request, 'incident_confirm.html', {'token': incident.incident_token,'email': incident.email,})
