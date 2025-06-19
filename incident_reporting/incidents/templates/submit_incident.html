@@ -34,5 +34,46 @@
       <button type="submit">Submit Incident</button>
     </form>
   </div>
+
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+      $(document).ready(function(){
+
+          $("#id_department").prop("disabled", true);
+
+
+          $("#id_division").change(function () {
+              var divisionId = $(this).val();
+              console.log(divisionId);
+
+              if (divisionId) {
+                  $.ajax({
+                      url: "{% url 'ajax_load_departments' %}",
+                      data: {
+                          division_id: divisionId
+                      },
+                      success: function (data) {
+                          var departmentSelect = $("#id_department");
+                          departmentSelect.empty();
+                          departmentSelect.append('<option value="">Select Department</option>');
+                          $.each(data, function (index, dept) {
+                              departmentSelect.append('<option value="' + dept.id + '">' + dept.name + '</option>');
+                          });
+                          departmentSelect.prop("disabled", false); 
+                      },
+                      error: function () {
+                          console.error("Failed to fetch departments");
+                      }
+                  });
+              } else {
+
+                  $("#id_department").empty();
+                  $("#id_department").append('<option value="">Select Department</option>');
+                  $("#id_department").prop("disabled", true);
+              }
+          });
+      });
+  </script>
 </body>
 </html>

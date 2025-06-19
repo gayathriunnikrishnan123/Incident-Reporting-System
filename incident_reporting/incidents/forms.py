@@ -1,11 +1,18 @@
 from django import forms
 from incidents.models import Incident
+from masterdata.models import Division
 
 class IncidentForm(forms.ModelForm):
     file = forms.FileField(
         required=False,
         widget=forms.ClearableFileInput(attrs={'multiple': True}),
         label="Attach files (optional)"
+    )
+    division = forms.ModelChoiceField(
+        queryset=Division.objects.filter(is_deleted=False),
+        empty_label="Select Division",
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
     )
     class Meta:
         model = Incident
@@ -21,7 +28,6 @@ class IncidentForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter incident title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Describe the issue'}),
-            'division': forms.Select(attrs={'class': 'form-control'}),
             'department': forms.Select(attrs={'class': 'form-control'}),
             'priority': forms.Select(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Optional'}),

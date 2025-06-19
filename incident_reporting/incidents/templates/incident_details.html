@@ -40,102 +40,106 @@
             </div>
 
             <div class="tab-content">
-                <div class="progress-section">
-                    <h2 class="section-title">Investigation Progress</h2>
-                    
-                    <div class="progress-tracker">
-                        <div class="progress-bar">
-                            <div class="progress-fill"></div>
-                        </div>
+                <div class="tab-section" id="tab-history">
+                    <div class="progress-section">
+                        <h2 class="section-title">Investigation Progress</h2>
                         
-                        <div class="progress-steps">
-                            <div class="step completed">
-                                <div class="step-icon"></div>
-                                <div class="step-label">Submitted</div>
-                                <div class="step-date">Jun 16, 2025</div>
+                        <div class="progress-tracker">
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
                             </div>
                             
-                            <div class="step completed">
-                                <div class="step-icon"></div>
-                                <div class="step-label">Under Review</div>
-                                <div class="step-date">Jun 16, 2025</div>
-                            </div>
-                            
-                            <div class="step current">
-                                <div class="step-icon"></div>
-                                <div class="step-label">Investigating</div>
-                                <div class="step-date">Jun 17, 2025</div>
-                            </div>
-                            
-                            <div class="step pending">
-                                <div class="step-icon"></div>
-                                <div class="step-label">Resolved</div>
-                                <div class="step-date">Pending</div>
+                            <div class="progress-steps">
+                                <div class="step completed">
+                                    <div class="step-icon"></div>
+                                    <div class="step-label">Submitted</div>
+                                    <div class="step-date">Jun 16, 2025</div>
+                                </div>
+                                
+                                <div class="step completed">
+                                    <div class="step-icon"></div>
+                                    <div class="step-label">Under Review</div>
+                                    <div class="step-date">Jun 16, 2025</div>
+                                </div>
+                                
+                                <div class="step current">
+                                    <div class="step-icon"></div>
+                                    <div class="step-label">Investigating</div>
+                                    <div class="step-date">Jun 17, 2025</div>
+                                </div>
+                                
+                                <div class="step pending">
+                                    <div class="step-icon"></div>
+                                    <div class="step-label">Resolved</div>
+                                    <div class="step-date">Pending</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="details-grid">
-                    <div class="detail-card">
-                        <h3 class="section-title">Responder Information</h3>
-                        
-                        <div class="detail-row">
-                            <span class="detail-label">Responder name</span>
-                            <span class="detail-value">{{incident_details.assigned_to.fullname}}</span>
+                <div class="tab-section active-tab" id="tab-details">
+                    <div class="details-grid">
+                        <div class="detail-card">
+                            <h3 class="section-title">Responder Information</h3>
+                            
+                            <div class="detail-row">
+                                <span class="detail-label">Responder name</span>
+                                <span class="detail-value">{{incident_details.assigned_to.fullname}}</span>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <span class="detail-label">Department</span>
+                                <span class="detail-value">{{ incident_details.assigned_to.departmentprofile_set.first.department }}</span>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <span class="detail-label">Contact Email</span>
+                                <span class="detail-value">{{incident_details.assigned_to}}</span>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <span class="detail-label">Report Date</span>
+                                <span class="detail-value">{{incident_details.created_at}}</span>
+                            </div>
                         </div>
-                        
-                        <div class="detail-row">
-                            <span class="detail-label">Department</span>
-                            <span class="detail-value">{{ incident_details.assigned_to.departmentprofile_set.first.department }}</span>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <span class="detail-label">Contact Email</span>
-                            <span class="detail-value">{{incident_details.assigned_to}}</span>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <span class="detail-label">Report Date</span>
-                            <span class="detail-value">{{incident_details.created_at}}</span>
+                        <div class="detail-card">
+                            <h3 class="section-title">Incident Information</h3>
+                            
+                            <div class="detail-row">
+                                <span class="detail-label">Incident Type</span>
+                                <span class="detail-value">Security Breach</span>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <span class="detail-label">Priority Level</span>
+                                <span class="detail-value">{{incident_details.priority}}</span>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <span class="detail-label">Assigned To</span>
+                                <span class="detail-value">Security Team</span>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <span class="detail-label">Expected Resolution</span>
+                                <span class="detail-value">48-72 hours</span>
+                            </div>
+                            
+                            <div class="detail-row">
+                                <span class="detail-label">Current Status</span>
+                                <span class="status-badge status-investigating">{{incident_details.status}}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="detail-card">
-                        <h3 class="section-title">Incident Information</h3>
-                        
-                        <div class="detail-row">
-                            <span class="detail-label">Incident Type</span>
-                            <span class="detail-value">Security Breach</span>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <span class="detail-label">Priority Level</span>
-                            <span class="detail-value">{{incident_details.priority}}</span>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <span class="detail-label">Assigned To</span>
-                            <span class="detail-value">Security Team</span>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <span class="detail-label">Expected Resolution</span>
-                            <span class="detail-value">48-72 hours</span>
-                        </div>
-                        
-                        <div class="detail-row">
-                            <span class="detail-label">Current Status</span>
-                            <span class="status-badge status-investigating">{{incident_details.status}}</span>
-                        </div>
+
+                    <div class="detail-card" style="margin-top: 30px;">
+                        <h3 class="section-title">Incident Description</h3>
+                        <div style="color: #666; line-height: 1.6; padding: 20px 0;">{{incident_details.description}}</div>
                     </div>
                 </div>
 
-                <div class="detail-card" style="margin-top: 30px;">
-                    <h3 class="section-title">Incident Description</h3>
-                    <div style="color: #666; line-height: 1.6; padding: 20px 0;">{{incident_details.description}}</div>
-                </div>
-
-                <div class="attachments-section">
+                <div class="tab-section" id="tab-attachments">
                     <h3 class="section-title">Uploaded Documents</h3>
 
                     {% for attachment in attachments %}
@@ -170,6 +174,10 @@
             });            
             event.target.classList.add('active');
             console.log('Switching to tab:', tabName);
+            document.querySelectorAll('.tab-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
         }
         
         function updateProgress() {
