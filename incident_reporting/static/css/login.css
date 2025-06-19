@@ -7,6 +7,8 @@
 body {
     font-family: "Poppins", sans-serif;
     background-color: #f0f8ff;  /* AliceBlue background */
+    /* background: linear-gradient(135deg, #5334dade 0%, #ec42f1 100%);
+    background: linear-gradient(135deg, #1e3c72 0%, #982a8f 100%); */
     color: #333;
     line-height: 1.6;
 }
@@ -45,7 +47,11 @@ a {
 a:hover {
     color: #4a89dc;
 }
-
+.trackerror{
+  display: flex;
+  justify-content: center;
+  font-size: 14px;
+}
 /* Buttons */
 .btn {
     display: inline-block;

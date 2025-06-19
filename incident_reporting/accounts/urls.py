@@ -20,9 +20,9 @@ urlpatterns = [
     path('dashboard/', views.dashboardView, name='dashboard'),
     path('systemconfig/', views.systemConfigView, name='system-config'),
     path('userManagement/', views.userManagementView, name='user-management'),
+    path('allIncidents/', views.allIncidentsView, name='all-incidents'),
 
     path('create-user/',views.createUserView,name='create-user'),
-    path('ajax/get-departments/', views.get_departments_by_division, name='ajax-get-departments'),
     path('edit-user/<int:userId>/',views.editUserView,name='edit-user'),
     path('delete-user/<int:userId>/',views.deleteUserView,name='delete-user'),
     path('all-users/',views.userListView,name='show-users'),
@@ -38,5 +38,10 @@ urlpatterns = [
     path('mappings/',views.departmentProfileView,name='show-maps'),
     path('edit-map/<int:mapId>/',views.departmentProfileEditView,name='edit-map'),
     path('delete-map/<int:mapId>/',views.departmentProfileDeleteView,name='delete-map'),
+
+
+    #  ajax handling
+
+    path("ajax/load-departments/", views.get_departments_by_division, name='ajax_load_departments'),
 
 ]

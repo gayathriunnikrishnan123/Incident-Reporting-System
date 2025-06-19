@@ -1,0 +1,25 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}All Incidents - Dashboard{% endblock %}
+{% block page_title %}Incident Manager{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">👥</div>
+        </div>
+        <div class="stat-value"><a href="#">All Incidents</a></div>
+        <div class="stat-change positive">Show all incidents</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">👤</div>
+        </div>
+        <div class="stat-value"><a href="#">None</a></div>
+        <div class="stat-change positive">None</div>
+    </div>
+</div>
+
+{% endblock %}

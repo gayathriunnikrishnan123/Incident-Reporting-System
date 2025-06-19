@@ -116,6 +116,7 @@ input[type="email"],
 input[type="tel"],
 input[type="password"],
 input[type="number"],
+textarea,
 select {
     width: 100%;
     padding: 12px 16px;
@@ -127,12 +128,14 @@ select {
     /* backdrop-filter: blur(10px); */
 }
 
+textarea::placeholder,
 input::placeholder {
     color: #a0aec0;
     font-weight: 400;
     letter-spacing: 0.5px;
 }
 
+textarea:focus,
 input:focus,
 select:focus {
     outline: none;
@@ -254,6 +257,7 @@ select {
     input[type="email"],
     input[type="tel"],
     input[type="password"],
+    textarea,
     select {
         padding: 14px 16px;
         font-size: 16px;
