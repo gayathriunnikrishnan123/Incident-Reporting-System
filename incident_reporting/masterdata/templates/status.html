@@ -7,7 +7,7 @@
 {% block headersPart %}
     <link rel="stylesheet" href="{% static 'css/user_form.css' %}">
 
-    <link rel="stylesheet" href="{% static 'css/userMaster.css' %}">
+    <link rel="stylesheet" href="{% static "css/userMaster.css" %}">
 
         <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
@@ -31,7 +31,7 @@
 
         <form method="post"  id="role-form">
             {% csrf_token %}
-
+            
             <!-- Display form errors -->
             {% if form.non_field_errors %}
                 <div class="form-errors">
@@ -40,7 +40,7 @@
                     {% endfor %}
                 </div>
             {% endif %}
-
+            
 
             <div class="form-group">
                 <label for="{{ form.level.id_for_label }}" class="form-label">Name</label>

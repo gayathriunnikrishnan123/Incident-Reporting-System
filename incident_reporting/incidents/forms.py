@@ -1,12 +1,50 @@
 from django import forms
+from incidents.models import Incident
+from masterdata.models import Division
 
-class IncidentReportForm(forms.Form):
-    title = forms.CharField(max_length=200, label='Incident Title')
-    description = forms.CharField(widget=forms.Textarea, label='Description')
-    location = forms.CharField(max_length=200, label='Location')
-    department = forms.CharField(max_length=100, label='Department')
-    division = forms.CharField(max_length=100, label='Division')
-    email = forms.EmailField(required=False, label='Email (Optional)')
-    phone = forms.CharField(max_length=15, required=False, label='Phone Number (Optional)')
-    attachments = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={'multiple': True}), label='Attachments')
+class IncidentForm(forms.ModelForm):
+    file = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        label="Attach files (optional)"
+    )
+    division = forms.ModelChoiceField(
+        queryset=Division.objects.filter(is_deleted=False),
+        empty_label="Select Division",
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    class Meta:
+        model = Incident
+        fields = [
+            'title',
+            'description',
+            'division',
+            'department',
+            'priority',
+            'email',
+            'phone',
+        ]
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter incident title'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Describe the issue'}),
+            'department': forms.Select(attrs={'class': 'form-control'}),
+            'priority': forms.Select(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Optional'}),
+            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Optional'}),
+        }
+        labels = {
+            'title': 'Incident Title',
+            'description': 'Description',
+            'division': 'Select Division (optional)',
+            'department': 'Select Department (optional)',
+            'priority': 'Priority (optional)',
+            'email': 'Your Email (optional)',
+            'phone': 'Your Phone (optional)',
+        }
 
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone and not phone.isdigit():
+            raise forms.ValidationError("Phone number should contain digits only.")
+        return phone

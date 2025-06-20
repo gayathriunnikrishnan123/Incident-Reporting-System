@@ -1,8 +1,8 @@
 from django.urls import path
-from frontend.views import *
+from frontend.views import homePage,incidentHomePage
 
 
 urlpatterns = [
-    path('',homePage,name='home'),
-    path('incidentHome/',IncidenthomePage,name="incidenthome"),
+    path('',incidentHomePage,name='inc-home'),
+    path('internals/',homePage,name='home'),
 ]

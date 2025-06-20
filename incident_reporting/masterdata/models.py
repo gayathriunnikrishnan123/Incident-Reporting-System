@@ -41,4 +41,27 @@ class IncidentSeverity(models.Model):
     is_deleted = models.BooleanField(default=False) 
 
     def __str__(self):
+        return self.name
+    
+
+
+class IncidentStatus(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    is_deleted = models.BooleanField(default=False) 
+
+    def __str__(self):
+        return self.name
+    
+
+class IncidentSeverity(models.Model):
+    level = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    weight = models.IntegerField(default=1)  
+    is_active = models.BooleanField(default=True)
+    is_deleted = models.BooleanField(default=False) 
+
+    def __str__(self):
         return self.level
+

@@ -1,5 +1,5 @@
 from django import forms
-from masterdata.models import Department, Division,IncidentSeverity, IncidentStatus
+from masterdata.models import Department, Division, IncidentSeverity, IncidentStatus
 
 class DepartmentForm(forms.ModelForm):
     division = forms.ModelChoiceField(
@@ -34,9 +34,6 @@ class DivisionForm(forms.ModelForm):
         }
 
 
-
-
-
 class IncidentSeverityForm(forms.ModelForm):
     class Meta:
         model = IncidentSeverity
@@ -61,7 +58,7 @@ class IncidentSeverityForm(forms.ModelForm):
             if qs.exists():
                 raise forms.ValidationError("Severity already exists")
         return cleaned_data
-
+    
 
 
 class IncidentStatusForm(forms.ModelForm):

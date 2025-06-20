@@ -8,5 +8,5 @@ def homePage(request):
 
 
 @audit_trail_decorator
-def IncidenthomePage(request):
-    return render(request,'Incidenthome.html')
+def incidentHomePage(request):
+    return render(request,'incidentHome.html')

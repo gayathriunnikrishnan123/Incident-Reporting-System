@@ -1,0 +1,8 @@
+Package         Version
+--------------- -------
+asgiref         3.8.1
+Django          4.2
+pip             23.2.1
+psycopg2-binary 2.9.10
+sqlparse        0.5.3
+tzdata          2025.2

@@ -1,10 +1,9 @@
 from django.urls import path
-from .views import report_incident
-from django.views.generic import TemplateView
-
+from incidents import views
 
 urlpatterns = [
-    path('report/', report_incident, name='report_incident'),
-    path('view-incident/', TemplateView.as_view(template_name='check_token.html'), name='view_incident'),
-
+    path('report/', views.submit_incident, name='submit_incident'),
+    path('success/<str:token>/', views.incident_success, name='incident_success'),
+    path('get-report/',views.track_incident_by_token,name='get_incidentby_token'),
+    path('get-report-details/<str:token>/',views.incident_details_by_token,name='detailsby_token'),
 ]
