@@ -53,6 +53,16 @@
             </div>
 
             <div class="form-group">
+                <label for="{{ form.role.id_for_label }}" class="form-label">Role</label>
+                {{ form.role }}
+                {% if form.role.errors %}
+                    {% for error in form.role.errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="form-group" id="division-group">
                 <label for="{{ form.division.id_for_label }}" class="form-label">Division</label>
                 {{ form.division }}
                 {% if form.division.errors %}
@@ -62,7 +72,7 @@
                 {% endif %}
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="department-group">
                 <label for="{{ form.department.id_for_label }}" class="form-label">Department</label>
                 {{ form.department }}
                 {% if form.department.errors %}
@@ -72,15 +82,6 @@
                 {% endif %}
             </div>
 
-            <div class="form-group">
-                <label for="{{ form.role.id_for_label }}" class="form-label">Role</label>
-                {{ form.role }}
-                {% if form.role.errors %}
-                    {% for error in form.role.errors %}
-                        <div class="error-message">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
-            </div>
             <div class="form-group">
                 <label for="{{ form.is_active.id_for_label }}" class="form-label">Active</label>
                 {{ form.is_active }}
@@ -168,6 +169,58 @@
                 ordering: true
             });
         });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $('#division-group, #department-group').hide();
+
+            $('#id_role').change(function () {
+                var roleVal = $('#id_role option:selected').text().toLowerCase();
+
+                if (roleVal === 'responder') {
+                    $('#division-group, #department-group').show();
+                    $('#id_department').prop("disabled", true);
+
+                    
+                    $('#id_division').off('change').on('change', function () {
+                        var divisionId = $(this).val();
+                        console.log("Selected division:", divisionId);
+
+                        if (divisionId) {
+                            $.ajax({
+                                url: "{% url 'ajax_load_departments' %}",
+                                data: { division_id: divisionId },
+                                success: function (data) {
+                                    var departmentSelect = $("#id_department");
+                                    departmentSelect.empty();
+                                    departmentSelect.append('<option value="">Select Department</option>');
+                                    $.each(data, function (index, dept) {
+                                        departmentSelect.append('<option value="' + dept.id + '">' + dept.name + '</option>');
+                                    });
+                                    departmentSelect.prop("disabled", false);
+                                },
+                                error: function () {
+                                    console.error("Failed to fetch departments");
+                                }
+                            });
+                        } else {
+                            $("#id_department").empty().append('<option value="">Select Department</option>').prop("disabled", true);
+                        }
+                    });
+
+                } else if (roleVal === 'reviewer') {
+                    $('#division-group').show();
+                    $('#department-group').hide();
+                    $('#id_department').empty().append('<option value="">Select Department</option>').prop("disabled", true);
+
+                } else {
+                    $('#division-group, #department-group').hide();
+                    $('#id_department').empty().append('<option value="">Select Department</option>').prop("disabled", true);
+                }
+            });
+        });
+
     </script>
 
 
