@@ -60,10 +60,14 @@ def dashboardView(request):
     loggedInUser=request.user
     print(request.session)
     if 'role_name' not in request.session:
-        depart = DepartmentProfile.objects.filter(user=loggedInUser,is_active=True,is_deleted=False,role__is_deleted=False).order_by('role__level').first()
-        if depart:
-            request.session['role_name'] = depart.role.name
-            request.session['role_level'] = depart.role.level
+        if loggedInUser.is_superuser:
+            request.session['role_name'] = 'Admin'
+            request.session['role_level'] = 1
+        else:
+            depart = DepartmentProfile.objects.filter(user=loggedInUser,is_active=True,is_deleted=False,role__is_deleted=False).order_by('role__level').first()
+            if depart:
+                request.session['role_name'] = depart.role.name
+                request.session['role_level'] = depart.role.level
 
     role = request.session.get('role_name', None)
     request.session['menus']=ROLE_MENUS.get(role,[])
