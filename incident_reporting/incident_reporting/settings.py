@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'frontend',
     'masterdata',
     'incidents',
+    'communication',
 ]
 
 MIDDLEWARE = [
