@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<h2>Chat – Incident: <span style="color:#007bff;">{{ incident.incident_token }}</span></h2>
+<h2>Chat – Incident: <span style="color:#007bff;">{{ incident_details.incident_token }}</span></h2>
 
 <div id="chat-box" class="chat-box">
     {% for msg in messages %}
@@ -12,15 +12,15 @@
             <small>{{ msg.created_at|date:"d M Y, H:i" }}{% if msg.is_internal %} • Internal{% endif %}</small>
         </div>
     {% empty %}
-        <p>No messages yet.</p>
+        <p id="no-msg">No messages yet.</p>
     {% endfor %}
 </div>
 
-<form id="chat-form" method="post" enctype="multipart/form-data">
+<form id="chat-form">
     {% csrf_token %}
-    <textarea name="message" id="message" placeholder="Type your message..." rows="4" required></textarea><br>
-    <label><input type="checkbox" name="is_internal" id="is_internal"> Mark as Internal</label><br>
-    <button type="submit" id="send-btn">Send</button>
+    <textarea name="message" id="message" rows="3" placeholder="Type your message..." required></textarea><br>
+    <label><input type="checkbox" id="is_internal"> Mark as Internal</label><br>
+    <button type="submit">Send</button>
 </form>
 
 <style>
@@ -28,15 +28,15 @@
     border: 1px solid #ccc;
     padding: 10px;
     max-height: 400px;
-    overflow-y: auto;
+    overflow-y: scroll;
     background: #f9f9f9;
     margin-bottom: 20px;
 }
 .message {
-    padding: 10px;
+    padding: 8px;
     margin: 10px 0;
-    border-radius: 6px;
-    max-width: 70%;
+    border-radius: 5px;
+    max-width: 60%;
 }
 .my-message {
     background-color: #d1f5d3;
@@ -46,62 +46,64 @@
 .other-message {
     background-color: #eaeaea;
     margin-right: auto;
-    text-align: left;
 }
 textarea {
     width: 100%;
     padding: 10px;
     resize: none;
-    font-size: 1em;
-    margin-bottom: 8px;
 }
 button {
-    display: block;
-    margin-top: 8px;
-    padding: 8px 14px;
+    margin-top: 10px;
 }
 </style>
 
 <script>
-document.getElementById('chat-form').addEventListener('submit', function(e) {
+document.getElementById("chat-form").addEventListener("submit", function(e) {
     e.preventDefault();
+    const message = document.getElementById("message").value.trim();
+    const isInternal = document.getElementById("is_internal").checked;
 
-    const message = document.getElementById('message').value;
-    const is_internal = document.getElementById('is_internal').checked;
+    if (!message) return;
+
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    fetch("", {
+    fetch("{% url 'post_chat_message' incident_details.id %}", {
         method: "POST",
         headers: {
-            "X-CSRFToken": csrfToken,
-            "X-Requested-With": "XMLHttpRequest",
-            "Content-Type": "application/x-www-form-urlencoded",
+            'X-CSRFToken': csrfToken,
         },
         body: new URLSearchParams({
             message: message,
-            is_internal: is_internal ? "on" : "",
+            is_internal: isInternal
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            const chatBox = document.getElementById('chat-box');
-            const div = document.createElement('div');
-            div.classList.add('message', 'my-message');
-            div.innerHTML = `
+            const chatBox = document.getElementById("chat-box");
+
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "message my-message";
+            msgDiv.innerHTML = `
                 <p><strong>${data.sender_name}</strong></p>
                 <p>${data.message}</p>
                 <small>${data.created_at}${data.is_internal ? ' • Internal' : ''}</small>
             `;
-            chatBox.appendChild(div);
+
+            chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
-            document.getElementById('message').value = "";
-            document.getElementById('is_internal').checked = false;
+
+            document.getElementById("message").value = "";
+            document.getElementById("is_internal").checked = false;
+            const noMsg = document.getElementById("no-msg");
+            if (noMsg) noMsg.remove();
         } else {
-            alert(data.error || 'Failed to send message.');
+            alert(data.error);
         }
     })
-    .catch(err => console.error('AJAX Error:', err));
+    .catch(error => {
+        console.error("Failed to send:", error);
+    });
 });
 </script>
 {% endblock %}
