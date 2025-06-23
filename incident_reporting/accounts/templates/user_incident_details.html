@@ -1,0 +1,228 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% block title %}Incident- Dashboard{% endblock %}
+{% block page_title %}{{incident_details.incident_token}}{% endblock %}
+
+{% block headersPart %}
+    <link rel="stylesheet" href="{% static "css/userincidentDetails.css" %}">
+{% endblock headersPart %}
+
+{% block content %}
+
+
+    <div class="user-header">
+        <button class="back-btn" onclick="goBack()">Back</button>
+        {% comment %} <h1 class="page-title">Incident Details</h1> {% endcomment %}
+    </div>
+
+    <div class="main-user-content">
+        <div class="incident-header">
+            <div class="incident-info">
+                <div class="info-group">
+                    <h3>Incident Reference</h3>
+                    <div class="info-value">{{incident_details.incident_token}}</div>
+                </div>
+                <div class="info-group">
+                    <h3>Status Duration</h3>
+                    {% if incident_details.updated_at %}
+                    <div class="incident-duration">{{ incident_details.updated_at|timesince }} ago</div>
+                    {% else %}
+                    <div class="incident-duration">Not available</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="content-tabs">
+            <button class="tab active" onclick="switchTab('details')">Incident Details</button>
+            <button class="tab" onclick="switchTab('history')">Status History</button>
+            <button class="tab" onclick="switchTab('attachments')">Attachments</button>
+            <button class="tab" onclick="switchTab('chat')">Communication</button>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-section" id="tab-history">
+                <div class="progress-section">
+                    <h2 class="section-title">Investigation Progress</h2>
+                    
+                    <div class="progress-tracker">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        
+                        <div class="progress-steps">
+                            <div class="step completed">
+                                <div class="step-icon"></div>
+                                <div class="step-label">Submitted</div>
+                                <div class="step-date">Jun 16, 2025</div>
+                            </div>
+                            
+                            <div class="step completed">
+                                <div class="step-icon"></div>
+                                <div class="step-label">Under Review</div>
+                                <div class="step-date">Jun 16, 2025</div>
+                            </div>
+                            
+                            <div class="step current">
+                                <div class="step-icon"></div>
+                                <div class="step-label">Investigating</div>
+                                <div class="step-date">Jun 17, 2025</div>
+                            </div>
+                            
+                            <div class="step pending">
+                                <div class="step-icon"></div>
+                                <div class="step-label">Resolved</div>
+                                <div class="step-date">Pending</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-section active-tab" id="tab-details">
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <h3 class="section-title">Responder Information</h3>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Responder name</span>
+                            <span class="detail-value">{{incident_details.assigned_to.fullname}}</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Department</span>
+                            <span class="detail-value">{{ incident_details.assigned_to.departmentprofile_set.first.department }}</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Contact Email</span>
+                            <span class="detail-value">{{incident_details.assigned_to}}</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Report Date</span>
+                            <span class="detail-value">{{incident_details.created_at}}</span>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <h3 class="section-title">Incident Information</h3>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Incident Type</span>
+                            <span class="detail-value">Security Breach</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Priority Level</span>
+                            <span class="detail-value">{{incident_details.priority}}</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Assigned To</span>
+                            <span class="detail-value">Security Team</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Expected Resolution</span>
+                            <span class="detail-value">48-72 hours</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <span class="detail-label">Current Status</span>
+                            <span class="status-badge status-investigating">{{incident_details.status}}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-card" style="margin-top: 30px;">
+                    <h3 class="section-title">Incident Description</h3>
+                    <div style="color: #666; line-height: 1.6; padding: 20px 0;">{{incident_details.description}}</div>
+                </div>
+            </div>
+
+            <div class="tab-section" id="tab-attachments">
+                <h3 class="section-title">Uploaded Documents</h3>
+
+                {% for attachment in attachments %}
+                    <div class="attachment-item">
+                        <div class="file-icon"><img src="{% static "images/file_icon.png" %}" alt="fileicon"></div>
+                        <div class="file-info">
+                            <div class="file-name">{{ attachment.file.name|cut:"incident_attachments/"|capfirst }}</div>
+                            <div class="file-size">2.4 MB</div>
+                        </div>
+                        <button class="download-btn"><a href="{{ attachment.file.url }}" target="_blank" title="Download"><img src="{% static "images/download_icon.png" %}" alt="downloadicon"></a></button>
+                    </div>
+                {% empty %}
+                    <li>No attachments uploaded.</li>
+                {% endfor %}
+                
+            </div>
+
+            <div class="tab-section" id="tab-chat">
+                <h3 class="section-title">Communication Thread</h3>
+                {% include "chat.html" %}
+
+                
+                
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });            
+            event.target.classList.add('active');
+            console.log('Switching to tab:', tabName);
+            document.querySelectorAll('.tab-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+        }
+        
+        function updateProgress() {
+            const progressFill = document.querySelector('.progress-fill');
+            const currentStep = document.querySelector('.step.current');
+            
+            setTimeout(() => {
+                progressFill.style.width = '75%';
+            }, 3000);
+        }
+        
+        setInterval(() => {
+            console.log('Checking for incident updates...');
+            // API call (gayathri)
+        }, 30000);
+        
+
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const attachments = document.querySelectorAll('.attachment-item');
+            attachments.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(5px)';
+                    this.style.boxShadow = '0 4px 12px rgba(79, 172, 254, 0.15)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+        });
+    </script>
+
+
+{% endblock extra_js %}

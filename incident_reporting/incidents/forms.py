@@ -5,7 +5,7 @@ from masterdata.models import Division
 class IncidentForm(forms.ModelForm):
     file = forms.FileField(
         required=False,
-        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        widget=forms.FileInput(attrs={'multiple': True}),
         label="Attach files (optional)"
     )
     division = forms.ModelChoiceField(

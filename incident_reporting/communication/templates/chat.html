@@ -1,0 +1,107 @@
+
+{% load static %}
+
+{% block content %}
+<h2>Chat – Incident: <span style="color:#007bff;">{{ incident.incident_token }}</span></h2>
+
+<div id="chat-box" class="chat-box">
+    {% for msg in messages %}
+        <div class="message {% if msg.sender == request.user %}my-message{% else %}other-message{% endif %}">
+            <p><strong>{% if msg.sender %}{{ msg.sender.fullname }}{% else %}Anonymous{% endif %}</strong></p>
+            <p>{{ msg.message }}</p>
+            <small>{{ msg.created_at|date:"d M Y, H:i" }}{% if msg.is_internal %} • Internal{% endif %}</small>
+        </div>
+    {% empty %}
+        <p>No messages yet.</p>
+    {% endfor %}
+</div>
+
+<form id="chat-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <textarea name="message" id="message" placeholder="Type your message..." rows="4" required></textarea><br>
+    <label><input type="checkbox" name="is_internal" id="is_internal"> Mark as Internal</label><br>
+    <button type="submit" id="send-btn">Send</button>
+</form>
+
+<style>
+.chat-box {
+    border: 1px solid #ccc;
+    padding: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: #f9f9f9;
+    margin-bottom: 20px;
+}
+.message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 6px;
+    max-width: 70%;
+}
+.my-message {
+    background-color: #d1f5d3;
+    margin-left: auto;
+    text-align: right;
+}
+.other-message {
+    background-color: #eaeaea;
+    margin-right: auto;
+    text-align: left;
+}
+textarea {
+    width: 100%;
+    padding: 10px;
+    resize: none;
+    font-size: 1em;
+    margin-bottom: 8px;
+}
+button {
+    display: block;
+    margin-top: 8px;
+    padding: 8px 14px;
+}
+</style>
+
+<script>
+document.getElementById('chat-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const message = document.getElementById('message').value;
+    const is_internal = document.getElementById('is_internal').checked;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    fetch("", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "X-Requested-With": "XMLHttpRequest",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+            message: message,
+            is_internal: is_internal ? "on" : "",
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const chatBox = document.getElementById('chat-box');
+            const div = document.createElement('div');
+            div.classList.add('message', 'my-message');
+            div.innerHTML = `
+                <p><strong>${data.sender_name}</strong></p>
+                <p>${data.message}</p>
+                <small>${data.created_at}${data.is_internal ? ' • Internal' : ''}</small>
+            `;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            document.getElementById('message').value = "";
+            document.getElementById('is_internal').checked = false;
+        } else {
+            alert(data.error || 'Failed to send message.');
+        }
+    })
+    .catch(err => console.error('AJAX Error:', err));
+});
+</script>
+{% endblock %}

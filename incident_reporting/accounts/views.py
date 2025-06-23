@@ -12,6 +12,7 @@ from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
 from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department
 from django.http import JsonResponse
+from incidents.models import Incident
 
 
 # Create your views here.
@@ -59,10 +60,14 @@ def dashboardView(request):
     loggedInUser=request.user
     print(request.session)
     if 'role_name' not in request.session:
-        depart = DepartmentProfile.objects.filter(user=loggedInUser,is_active=True,is_deleted=False,role__is_deleted=False).order_by('role__level').first()
-        if depart:
-            request.session['role_name'] = depart.role.name
-            request.session['role_level'] = depart.role.level
+        if loggedInUser.is_superuser:
+            request.session['role_name'] = 'Admin'
+            request.session['role_level'] = 1
+        else:
+            depart = DepartmentProfile.objects.filter(user=loggedInUser,is_active=True,is_deleted=False,role__is_deleted=False).order_by('role__level').first()
+            if depart:
+                request.session['role_name'] = depart.role.name
+                request.session['role_level'] = depart.role.level
 
     role = request.session.get('role_name', None)
     request.session['menus']=ROLE_MENUS.get(role,[])
@@ -317,7 +322,7 @@ def departmentProfileDeleteView(request, mapId):
 
 # for auto populating departments from division
 
-
+@audit_trail_decorator
 def get_departments_by_division(request):
     division_id = request.GET.get("division_id")
     departments = Department.objects.filter(division_id=division_id, is_deleted=False).values("id", "name")
@@ -328,3 +333,30 @@ def get_departments_by_division(request):
 
 
 
+@login_required
+@audit_trail_decorator
+@role_level_required(1)
+def get_all_incidents(request):
+    role = request.session.get('role_name', None)
+    allIncidents=Incident.objects.all()  
+    return render(request,"all_user_incidents.html",{'allIncidents':allIncidents})
+
+@login_required
+@audit_trail_decorator
+@role_level_required(3)
+def get_my_incidents(request):
+    role = request.session.get('role_name', None)
+    allIncidents=Incident.objects.filter(assigned_to=request.user)  
+    return render(request,"my_incidents.html",{'allIncidents':allIncidents})
+
+
+
+@login_required
+@audit_trail_decorator
+@role_level_required(3)
+def incident_details_by_token(request,token):
+    incident_details=get_object_or_404(Incident, incident_token=token, is_deleted=False)
+    attachments=incident_details.attachments.all()
+    for i in attachments:
+        print(i)
+    return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments})
