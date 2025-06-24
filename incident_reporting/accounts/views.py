@@ -360,3 +360,29 @@ def incident_details_by_token(request,token):
     for i in attachments:
         print(i)
     return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments})
+
+
+
+
+#  for reviewer panel
+
+
+@login_required
+@audit_trail_decorator
+@role_level_required(2)
+def get_my_departments(request):
+    my_division=DepartmentProfile.objects.filter(user=request.user,role__name="Reviewer",  department__isnull=True,is_deleted=False).values_list('division_id', flat=True)
+    print(list(my_division))  
+    my_departments=Department.objects.filter(division_id__in=my_division,is_deleted=False)
+    print(my_departments)
+    return render(request,"all_departments_reviewer.html",{'my_departments':my_departments})
+
+
+@login_required
+@audit_trail_decorator
+@role_level_required(2)
+def get_incidents_under_my_departments(request,dept_id):
+    department = get_object_or_404(Department, id=dept_id)
+    allIncidents=Incident.objects.filter(department_id=dept_id)
+    return render(request,"all_incidents_under_department.html",{'allIncidents':allIncidents,'department':department})
+

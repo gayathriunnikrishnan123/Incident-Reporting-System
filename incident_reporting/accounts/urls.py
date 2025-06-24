@@ -50,6 +50,10 @@ urlpatterns = [
     path('allIncidents/all-incidents/',views.get_all_incidents,name='all-user-incidents'),
     path('allIncidents/my-incidents/',views.get_my_incidents,name='my-incidents'),
     path('allIncidents/all-incidents/<str:token>/',views.incident_details_by_token,name='get-incident-by-token'),
+
+    # all departments for reviewer panel
+    path('allIncidents/all-departments/',views.get_my_departments,name='get-my-departments'),
+    path('allIncidents/all-departments/<int:dept_id>',views.get_incidents_under_my_departments,name='get-department-incidents'),
     
 
 ]
