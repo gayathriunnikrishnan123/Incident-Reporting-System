@@ -13,8 +13,7 @@ from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department
 from django.http import JsonResponse
 from incidents.models import Incident
-
-
+from masterdata.models import Division
 # Create your views here.
 
 
@@ -360,3 +359,32 @@ def incident_details_by_token(request,token):
     for i in attachments:
         print(i)
     return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments})
+
+
+@login_required
+@audit_trail_decorator
+@role_level_required(1) 
+def all_divisions_view(request):
+    role = request.session.get('role_name', None)
+    divisions = Division.objects.prefetch_related('department_set').all()
+    return render(request,"all_divisions.html", {'allDivisions': divisions})
+
+
+def division_departments_view(request, division_id):
+    division = get_object_or_404(Division, pk=division_id, is_deleted=False)
+    departments = Department.objects.filter(division=division, is_deleted=False)
+    return render(request, 'division_departments.html', {'division': division, 'departments': departments})
+
+
+
+
+@login_required
+@audit_trail_decorator
+@role_level_required(1)
+def department_incidents_view(request, department_id):
+    department = get_object_or_404(Department, id=department_id, is_deleted=False)
+    incidents = Incident.objects.filter(department=department, is_deleted=False)
+    return render(request, 'department_incidents.html', {
+        'department': department,
+        'incidents': incidents
+    })

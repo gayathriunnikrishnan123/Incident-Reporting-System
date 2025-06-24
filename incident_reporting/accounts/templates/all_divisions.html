@@ -1,0 +1,24 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}All Divisions{% endblock %}
+{% block page_title %}All Divisions{% endblock %}
+
+{% block headersPart %}
+<link rel="stylesheet" href="{% static 'css/user_form.css' %}">
+<link rel="stylesheet" href="{% static 'css/userMaster.css' %}">
+{% endblock headersPart %}
+
+{% block content %}
+<div class="stats-grid">
+    {% for division in allDivisions %}
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">🏢</div>
+        </div>
+        <!-- Make the division name a link to departments page -->
+        <a href="{% url 'division_departments' division.id %}" class="stat-value">{{ division.name }}</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock content %}

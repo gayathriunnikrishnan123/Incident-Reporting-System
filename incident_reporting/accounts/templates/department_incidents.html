@@ -1,0 +1,73 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Incidents for {{ department.name }}{% endblock %}
+{% block page_title %}Incidents Reported in {{ department.name }}{% endblock %}
+
+{% block headersPart %}
+    <link rel="stylesheet" href="{% static 'css/user_form.css' %}">
+    <link rel="stylesheet" href="{% static 'css/userMaster.css' %}">
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+{% endblock headersPart %}
+
+{% block content %}
+    <h2>Incidents in {{ department.name }}</h2>
+
+    {% if incidents %}
+    <div class="table-wrapper">
+        <table id="incidentsTable" class="display responsive nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Incident Token</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Reported At</th>
+                    <th>Assigned To</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for incident in incidents %}
+                <tr>
+                    <td>{{ incident.incident_token }}</td>
+                    <td>{{ incident.title }}</td>
+                    <td>{{ incident.status }}</td>
+                    <td>{{ incident.priority }}</td>
+                    <td>{{ incident.created_at }}</td>
+                    <td>{{ incident.assigned_to.fullname }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No incidents reported for this department.</p>
+    {% endif %}
+
+    <a href="{% url 'division_departments' department.division.id %}">Back to Departments</a>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        $('#incidentsTable').DataTable({
+            responsive: true,
+            pageLength: 25,
+            lengthMenu: [5, 10, 25, 50],
+            lengthChange: true,
+            searching: true,
+            ordering: true
+        });
+    });
+</script>
+{% endblock extra_js %}

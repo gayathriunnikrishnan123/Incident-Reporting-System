@@ -52,4 +52,7 @@ urlpatterns = [
     path('allIncidents/all-incidents/<str:token>/',views.incident_details_by_token,name='get-incident-by-token'),
     
 
+    path('divisions/', views.all_divisions_view, name='all-divisions'),  # List divisions
+    path('divisions/<int:division_id>/departments/', views.division_departments_view, name='division_departments'),
+    path('departments/<int:department_id>/incidents/', views.department_incidents_view, name='department_incidents'),
 ]

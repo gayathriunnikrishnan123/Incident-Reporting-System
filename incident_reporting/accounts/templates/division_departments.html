@@ -1,0 +1,30 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Departments of {{ division.name }}{% endblock %}
+{% block page_title %}Departments in {{ division.name }}{% endblock %}
+
+{% block headersPart %}
+<link rel="stylesheet" href="{% static 'css/user_form.css' %}">
+<link rel="stylesheet" href="{% static 'css/userMaster.css' %}">
+{% endblock headersPart %}
+
+{% block content %}
+<h2>Departments under {{ division.name }}</h2>
+
+<div class="stats-grid">
+    {% for dept in departments %}
+   <div class="stat-card">
+    <div class="stat-header">
+        <div class="stat-icon">🏬</div>
+    </div>
+    <!-- Link to department incidents -->
+    <a href="{% url 'department_incidents' dept.id %}" class="stat-value">{{ dept.name }}</a>
+</div>
+    {% empty %}
+    <p>No departments found under this division.</p>
+    {% endfor %}
+</div>
+
+
+{% endblock content %}
