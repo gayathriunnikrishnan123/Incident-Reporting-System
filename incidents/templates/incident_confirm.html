@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static "css/incidentConfirm.css" %}">
+    <title>Incident Report Submitted</title>
+</head>
+<body>
+    <div class="success-container">
+        <div class="check-icon"></div>
+        
+        <div class="incident-status">Incident Submitted</div>
+        
+        <h1>Your incident report has been submitted successfully!</h1>
+        
+        <p class="subtitle">
+            We've received your incident report and our team will investigate promptly.<br>
+            You'll receive updates via email as we progress through the investigation.
+        </p>
+        
+        <div class="token-section">
+            <div class="token-label">Your Incident Reference Token</div>
+            <div class="token-value" id="incidentToken">{{token}}</div>
+            <button class="copy-btn" onclick="copyToken()">Copy Token</button>
+        </div>
+        
+        {% if email %}
+            <div class="email-section">
+                <div class="email-icon"></div>
+                <div style="font-weight: 600; color: #f57c00; margin-bottom: 8px;">Email Notification</div>
+                <div style="color: #666; font-size: 14px;">
+                    Confirmation and tracking details have been sent to <strong>{{ email }}</strong>
+                </div>
+            </div>
+        {% else %}
+            <div class="email-section">
+                <div class="email-icon"></div>
+                <div style="font-weight: 600; color: #f57c00; margin-bottom: 8px;">Reference Token</div>
+                <div style="color: #666; font-size: 14px;">
+                    Your reference token <strong>{{ token }}</strong> is displayed above. Save it securely to track your incident.
+                </div>
+            </div>
+        {% endif %}
+        
+        <a href="{% url 'get_incidentby_token' %}" class="tracking-link">Track Your Incident</a>
+        
+        <div class="help-text">
+            Need help? Write to us on <a href="#" class="help-link">sk@gmail.com</a>.
+        </div>
+    </div>
+
+    <script>
+        function copyToken() {
+            const token = document.getElementById('incidentToken').textContent;
+            navigator.clipboard.writeText(token).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = 'linear-gradient(135deg, #4caf50, #45a049)';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = 'linear-gradient(135deg, #4facfe, #00f2fe)';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

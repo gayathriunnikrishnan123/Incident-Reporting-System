@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Submit Incident</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{% static "css/submitIncForm.css" %}">
+</head>
+<body>
+  <header class="navbar">
+        <div class="container">
+            <h1 class="logo">IncidentReport</h1>
+            <nav>
+                <ul class="nav-links">
+                    {% comment %} Add nav items if needed {% endcomment %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+  <div class="form-wrapper">
+    <h2>Submit an Incident (Anonymous)</h2>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for field in form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="error">{{ field.errors|striptags }}</div>
+        {% endif %}
+      {% endfor %}
+
+      <button type="submit">Submit Incident</button>
+    </form>
+  </div>
+
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+      $(document).ready(function(){
+
+          $("#id_department").prop("disabled", true);
+
+
+          $("#id_division").change(function () {
+              var divisionId = $(this).val();
+              console.log(divisionId);
+
+              if (divisionId) {
+                  $.ajax({
+                      url: "{% url 'ajax_load_departments' %}",
+                      data: {
+                          division_id: divisionId
+                      },
+                      success: function (data) {
+                          var departmentSelect = $("#id_department");
+                          departmentSelect.empty();
+                          departmentSelect.append('<option value="">Select Department</option>');
+                          $.each(data, function (index, dept) {
+                              departmentSelect.append('<option value="' + dept.id + '">' + dept.name + '</option>');
+                          });
+                          departmentSelect.prop("disabled", false); 
+                      },
+                      error: function () {
+                          console.error("Failed to fetch departments");
+                      }
+                  });
+              } else {
+
+                  $("#id_department").empty();
+                  $("#id_department").append('<option value="">Select Department</option>');
+                  $("#id_department").prop("disabled", true);
+              }
+          });
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+{% comment %} <h3>Public Chat</h3>
+
+<div id="chat-thread">
+    {% for msg in messages %}
+        <div class="message-box">
+            <p>{{ msg.message }}</p>
+            <small>{{ msg.created_at|timesince }} ago</small>
+            {% for att in msg.msgAttachments.all %}
+                <div><a href="{{ att.file.url }}" target="_blank">📎 Attachment</a></div>
+            {% endfor %}
+        </div>
+    {% empty %}
+        <p>No messages yet.</p>
+    {% endfor %}
+</div>
+
+<form id="public-message-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {{ file_form.as_p }}
+    <button type="submit">Send</button>
+</form> {% endcomment %}
+
+
+{% load static %}
+<link rel="stylesheet" href="{% static "css/chatPage.css" %}">
+
+
+<div class="chat-boundary">
+    <div class="chat-header">
+        Public Communication
+    </div>
+
+    <div class="messages-container" id="messagesContainer">
+        {% for msg in messages %}
+            <div class="message {% if msg.is_internal_only %}internal{% endif %}">
+                <div class="message-header">
+                    <span class="message-author">
+                        {{ msg.sender.fullname|default:"Anonymous" }}
+                    </span>
+                    <span class="message-time">{{ msg.created_at|timesince }} ago</span>
+                    {% if msg.is_internal_only %}
+                        <span class="internal-badge">Internal</span>
+                    {% endif %}
+                </div>
+                <div class="message-content">{{ msg.message }}</div>
+
+                {% if msg.msgAttachments.exists %}
+                    <div class="attachments">
+                        {% for att in msg.msgAttachments.all %}
+                            <a href="{{ att.file.url }}" class="attachment" target="_blank">📎 {{ att.file.name|cut:"message_attachments/" }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p class="empty-state">No messages yet.</p>
+        {% endfor %}
+    </div>
+
+    <div class="message-form">
+        <form id="public-message-form" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label" for="{{ form.message.id_for_label }}">Message</label>
+                {{ form.message }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="{{ file_form.file.id_for_label }}">Attachment</label>
+                {{ file_form.file }}
+            </div>
+
+            <button type="submit" class="btn-primary" id="submitBtn">Send Message</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const container = document.getElementById('messagesContainer');
+    container.scrollTop = container.scrollHeight;
+</script>

@@ -1,0 +1,103 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% block title %}All Incidents - Dashboard{% endblock %}
+{% block page_title %}All Incidents{% endblock %}
+
+{% block headersPart %}
+    <link rel="stylesheet" href="{% static 'css/user_form.css' %}">
+
+    <link rel="stylesheet" href="{% static "css/userMaster.css" %}">
+
+        <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+    <!-- jQuery (Required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+{% endblock headersPart %}
+
+{% block content %}
+
+
+<div class="stat-card" style="margin-bottom: 20px;">
+    <form method="get">
+        <label for="division-select" style="font-weight: bold; display: block; margin-bottom: 8px;">Filter by Division:</label>
+        <select id="division-select" name="division" onchange="this.form.submit()" style="padding: 8px; border-radius: 6px; width: 100%;">
+            <option value="">-- All Divisions --</option>
+            {% for div in divisions %}
+                <option value="{{ div.id }}" {% if selected_division == div.id %}selected{% endif %}>{{ div.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+
+<div class="stats-grid">
+    {% for incident in allIncidents %}
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">📦</div>
+        </div>
+        <div class="stat-value"><a href="#">{{incident.title}}</a></div>
+        <div class="stat-change positive">{{incident.priority}}</div>
+    </div>
+    {% endfor %}
+</div>
+
+
+<div class="table-wrapper">
+    <table id="userTable" class="display responsive nowrap" style="width:100%">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Token</th>
+                <th>Assigned To</th>
+                <th>Severity</th>
+                <th>Created at</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incident in allIncidents %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ incident.incident_token }}</td>
+                <td>{{ incident.assigned_to.fullname }}</td>
+                <td>{{ incident.priority }}</td>
+                <td>{{ incident.created_at }}</td>
+                <td>{{ incident.status }}</td>
+                <td>
+                    <a href="{% url 'get-incident-by-token' incident.incident_token %}"class="action-btn edit-btn">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+    <script>
+        $(document).ready(function () {
+            $('#userTable').DataTable({
+                responsive: true,
+                pageLength: 25,
+                lengthMenu: [3, 10, 25, 50],
+                lengthChange: true,
+                searching: true,
+                ordering: true
+            });
+        });
+    </script>
+
+
+{% endblock extra_js %}

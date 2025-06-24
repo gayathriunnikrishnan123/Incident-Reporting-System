@@ -1,0 +1,100 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}All users{% endblock %}
+{% block page_title %}All Users{% endblock %}
+
+{% block headersPart %}
+    <link rel="stylesheet" href="{% static "css/userMaster.css" %}">
+
+        <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+    <!-- jQuery (Required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+{% endblock headersPart %}
+
+
+
+{% block content %}
+
+
+    <div class="controls">
+        <a href="{% url "create-user"%}"class="action-btn new-btn">Add new user</a>
+    </div>
+    <div class="table-wrapper">
+        <table id="userTable" class="display responsive nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Email</th>
+                    <th>Full Name</th>
+                    <th>Phone</th>
+                    <th>Division</th>
+                    <th>Department</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.fullname }}</td>
+                    <td>{{ user.phone }}</td>
+                    <td>{{ user.default_division.name }}</td>
+                    <td>{{ user.default_department.name }}</td>
+                    <td>
+
+                        <a href="{% url "edit-user" user.id %}"class="action-btn edit-btn">Edit</a>
+
+                        {% if user.is_superuser %}
+                            <button class="action-btn delete-btn" disabled title="Admin users cannot be deleted">Delete</button>
+                        {% else %}
+                            <form method="post" action="{% url 'delete-user' user.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn delete-btn"
+                                    onclick="return confirm('Are you sure you want to delete this user?');">
+                                    Delete
+                                </button>
+                            </form>
+                        {% endif %}
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    {% comment %} <script src="{% static 'js/userMaster.js' %}"></script> {% endcomment %}
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+    {% comment %} <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script> {% endcomment %}
+
+    <script>
+        $(document).ready(function () {
+            $('#userTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                lengthChange: true,
+                searching: true,
+                ordering: true
+            });
+        });
+    </script>
+
+
+{% endblock extra_js %}
