@@ -23,6 +23,11 @@ def role_level_required(min_level):
         def dec_wrapper(request, *args, **kwargs):
             if not request.user.is_authenticated:
                 return redirect('login')
+            
+            if request.user.is_superuser:
+                request.session['role_name'] = 'Admin'
+                request.session['role_level'] = 1 
+                return func(request, *args, **kwargs)
 
             if 'role_level' not in request.session:
                 highest_dp = (DepartmentProfile.objects.filter(user=request.user,is_active=True,is_deleted=False,role__is_deleted=False).order_by('role__level').first())

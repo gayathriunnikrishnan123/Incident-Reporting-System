@@ -44,4 +44,12 @@ urlpatterns = [
 
     path("ajax/load-departments/", views.get_departments_by_division, name='ajax_load_departments'),
 
+
+    # incidents
+
+    path('allIncidents/all-incidents/',views.get_all_incidents,name='all-user-incidents'),
+    path('allIncidents/my-incidents/',views.get_my_incidents,name='my-incidents'),
+    path('allIncidents/all-incidents/<str:token>/',views.incident_details_by_token,name='get-incident-by-token'),
+    
+
 ]
