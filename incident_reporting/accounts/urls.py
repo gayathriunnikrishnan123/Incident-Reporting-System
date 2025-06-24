@@ -54,6 +54,11 @@ urlpatterns = [
     # all departments for reviewer panel
     path('allIncidents/all-departments/',views.get_my_departments,name='get-my-departments'),
     path('allIncidents/all-departments/<int:dept_id>',views.get_incidents_under_my_departments,name='get-department-incidents'),
+
+    #  for admin panel
+
+    path('allIncidents/all-divisions/', views.all_divisions_view, name='all-divisions-admin'), 
+    path('allIncidents/all-divisions/<int:division_id>/departments/', views.division_departments_view, name='division-departments-admin'),
     
 
 ]

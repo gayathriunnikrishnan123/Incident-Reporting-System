@@ -16,14 +16,39 @@
     </div>
 
     {% endif %}
+
+    {% if request.session.role_name == 'Reviewer' %}
+
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">📦</div>
+        </div>
+        <div class="stat-value"><a href="{% url "get-my-departments" %}">All Departments</a></div>
+        <div class="stat-change positive">Show all incidents under my departments</div>
+    </div>
+
+    {% endif %}
     
     <div class="stat-card">
         <div class="stat-header">
             <div class="stat-icon">👤</div>
         </div>
         <div class="stat-value"><a href="{% url 'my-incidents' %}">My Incidents</a></div>
-        <div class="stat-change positive">Incidents that need your attention</div>
+        <div class="stat-change positive">Incidents that need your attention and assign a Responder</div>
     </div>
+</div>
+
+<div class="stats-grid">
+    {% if request.session.role_name == 'Admin' %}
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon">🏢</div>
+        </div>
+        <div class="stat-value"><a href="{% url 'all-divisions-admin' %}">All Divisions</a></div>
+        <div class="stat-change positive">Show all division wise incidents</div>
+    </div>
+
+    {% endif %}
 </div>
 
 {% endblock %}

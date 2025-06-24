@@ -1,0 +1,32 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}All Incidents - Dashboard{% endblock %}
+{% block page_title %}Incident-department Manager{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid">
+
+    {% if my_departments %}
+
+        {% for dept in my_departments %}
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📦</div>
+                </div>
+                <div class="stat-value"><a href="{% url 'get-department-incidents' dept.id %}">{{dept.name}}</a></div>
+                <div class="stat-change positive">Show all incidents under my departments</div>
+            </div>
+        
+        {% endfor %}
+
+    {% else %}
+
+    <p>No departments found under your division(s).</p>
+    
+    {% endif %}
+
+</div>
+
+{% endblock %}

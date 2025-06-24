@@ -10,7 +10,7 @@ from accounts.forms import (
 )
 from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile, Menu
 from accounts.decorators import audit_trail_decorator, role_level_required
-from masterdata.models import Department
+from masterdata.models import Department, Division
 from django.http import JsonResponse
 from incidents.models import Incident
 
@@ -385,4 +385,23 @@ def get_incidents_under_my_departments(request,dept_id):
     department = get_object_or_404(Department, id=dept_id)
     allIncidents=Incident.objects.filter(department_id=dept_id)
     return render(request,"all_incidents_under_department.html",{'allIncidents':allIncidents,'department':department})
+
+
+# for admin panel
+
+@login_required
+@audit_trail_decorator
+@role_level_required(1) 
+def all_divisions_view(request):
+    divisions = Division.objects.all()
+    return render(request,"all_divisions_admin.html", {'allDivisions': divisions})
+
+
+@login_required
+@audit_trail_decorator
+@role_level_required(1) 
+def division_departments_view(request, division_id):
+    division = get_object_or_404(Division, pk=division_id, is_deleted=False)
+    departments = Department.objects.filter(division=division, is_deleted=False)
+    return render(request, 'all_departments_admin.html', {'division': division, 'departments': departments})
 
