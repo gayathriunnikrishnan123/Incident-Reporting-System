@@ -37,6 +37,7 @@
             <button class="tab active" onclick="switchTab('details')">Incident Details</button>
             <button class="tab" onclick="switchTab('history')">Status History</button>
             <button class="tab" onclick="switchTab('attachments')">Attachments</button>
+            <button class="tab" onclick="switchTab('comments')">Chat</button>
         </div>
 
         <div class="tab-content">
@@ -156,6 +157,11 @@
                 {% endfor %}
                 
             </div>
+
+
+            <div class="tab-section" id="tab-comments" data-token="{{ incident_details.incident_token }}">                
+            </div>
+            
         </div>
     </div>
 
@@ -165,6 +171,45 @@
 
 
 {% block extra_js %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        function loadChat(){
+            var token=$("#tab-comments").data('token');
+            if(token){
+                console.log(token)
+            }
+            $.get("/communication/internal-chat/" + token + "/", function(response) {
+            $("#tab-comments").html(response.html);
+        });
+        }
+        loadChat();
+
+        {% comment %} for sending messages {% endcomment %}
+         $(document).on('submit', '#internal-message-form', function(e) {
+            e.preventDefault();
+
+            var token = $("#tab-comments").data('token');
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: "/communication/internal-chat/" + token + "/",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $("#tab-comments").html(response.html);
+                    loadChat(); 
+                },
+                error: function(er) {
+                    alert("Error sending message.",er);
+                }
+            });
+        });
+
+    </script>
 
     <script>
         function goBack() {
@@ -177,6 +222,9 @@
             });            
             event.target.classList.add('active');
             console.log('Switching to tab:', tabName);
+            if(tabName==='comments'){
+                loadChat()
+            }
             document.querySelectorAll('.tab-section').forEach(section => {
                 section.style.display = 'none';
             });

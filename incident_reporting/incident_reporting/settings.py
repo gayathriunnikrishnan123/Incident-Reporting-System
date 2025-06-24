@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'accounts',
     'masterdata',
     'incidents',
+    'communication',
 ]
 
 MIDDLEWARE = [
