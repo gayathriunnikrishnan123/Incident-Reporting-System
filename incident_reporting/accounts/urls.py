@@ -39,7 +39,6 @@ urlpatterns = [
     path('edit-map/<int:mapId>/',views.departmentProfileEditView,name='edit-map'),
     path('delete-map/<int:mapId>/',views.departmentProfileDeleteView,name='delete-map'),
 
-
     #  ajax handling
 
     path("ajax/load-departments/", views.get_departments_by_division, name='ajax_load_departments'),

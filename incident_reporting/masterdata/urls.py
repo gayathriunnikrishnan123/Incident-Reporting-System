@@ -17,4 +17,8 @@ urlpatterns = [
     path('status/', views.manage_status, name='manage_status'),
     path('status/edit/<int:pk>/', views.edit_status, name='edit_status'),
     path('status/delete/<int:pk>/', views.delete_status, name='delete_status'),
+
+    path('role-status-mapping/', views.role_status_mapping_view, name='role-status-mapping'),
+    path('role-status-mapping/edit/<int:pk>/', views.edit_role_status_mapping, name='edit-role-status-mapping'),
+    path('delete-role-status-mapping/<int:pk>/', views.delete_role_status_mapping, name='delete-role-status-mapping'),
 ]

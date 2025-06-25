@@ -207,3 +207,4 @@ class DepartmentProfileForm(forms.ModelForm):
     class Meta:
         model = DepartmentProfile
         fields = ["user", "division", "department", "role", "is_active"]
+

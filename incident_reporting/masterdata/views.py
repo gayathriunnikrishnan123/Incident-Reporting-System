@@ -4,7 +4,8 @@ from masterdata.forms import DepartmentForm, DivisionForm, IncidentSeverityForm,
 from django.contrib.auth.decorators import login_required
 from accounts.decorators import audit_trail_decorator, role_level_required
 from django.http import JsonResponse
-
+from .models import RoleStatusMapping
+from .forms import RoleStatusMappingForm
 
 
 
@@ -263,3 +264,38 @@ def delete_status(request, pk):
     status.is_deleted = True
     status.save()
     return redirect('manage_status')
+
+
+
+
+def role_status_mapping_view(request):
+    mappings = RoleStatusMapping.objects.all()
+    form = RoleStatusMappingForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('role-status-mapping')
+
+    return render(request, 'role_status_mapping.html', {
+        'form': form,
+        'allMappings': mappings,
+    })
+
+def edit_role_status_mapping(request, pk):
+    mapping = get_object_or_404(RoleStatusMapping, pk=pk)
+    form = RoleStatusMappingForm(request.POST or None, instance=mapping)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return redirect('role-status-mapping')
+    return render(request, 'role_status_mapping.html', {
+        'form': form,
+        'allMappings': RoleStatusMapping.objects.all(),
+        'edit_mode': True,
+        'editing_id': pk,
+    })
+
+
+def delete_role_status_mapping(request, pk):
+    mapping = get_object_or_404(RoleStatusMapping, pk=pk)
+    mapping.delete()
+    return redirect('role-status-mapping')

@@ -65,3 +65,20 @@ class IncidentSeverity(models.Model):
     def __str__(self):
         return self.level
 
+
+
+# Remove this line:
+# from accounts.models import Role
+
+from django.apps import apps
+
+class RoleStatusMapping(models.Model):
+    role = models.ForeignKey('accounts.Role', on_delete=models.CASCADE) 
+    status = models.ForeignKey('masterdata.IncidentStatus', on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('role', 'status')
+
+    def __str__(self):
+        return f"{self.role} -> {self.status}"

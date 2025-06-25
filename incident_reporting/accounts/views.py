@@ -388,3 +388,4 @@ def department_incidents_view(request, department_id):
         'department': department,
         'incidents': incidents
     })
+

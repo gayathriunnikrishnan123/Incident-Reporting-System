@@ -84,3 +84,12 @@ class IncidentStatusForm(forms.ModelForm):
             if qs.exists():
                 raise forms.ValidationError("Status already exists")
         return cleaned_data
+
+
+from django import forms
+from .models import RoleStatusMapping
+
+class RoleStatusMappingForm(forms.ModelForm):
+    class Meta:
+        model = RoleStatusMapping
+        fields = ['role', 'status', 'is_active']
