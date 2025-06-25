@@ -12,7 +12,8 @@ from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
 from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department, Division
 from django.http import JsonResponse
-from incidents.models import Incident
+from incidents.models import Incident, IncidentStatus
+from incidents.forms import IncidentStatusUpdateForm
 
 
 # Create your views here.
@@ -357,9 +358,11 @@ def get_my_incidents(request):
 def incident_details_by_token(request,token):
     incident_details=get_object_or_404(Incident, incident_token=token, is_deleted=False)
     attachments=incident_details.attachments.all()
+    role = request.session.get('role_name')
+    form = get_status_updateForm_by_role(incident_details, role)
     for i in attachments:
         print(i)
-    return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments})
+    return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments,'status_form': form,'user_role': role,})
 
 
 
@@ -405,3 +408,44 @@ def division_departments_view(request, division_id):
     departments = Department.objects.filter(division=division, is_deleted=False)
     return render(request, 'all_departments_admin.html', {'division': division, 'departments': departments})
 
+
+
+#  to do status update based on our team discussuion
+# we can setup the allowed status rules
+# if its working fine we can move on to db after discussion
+
+ROLE_STATUS_MAP = {
+    "Responder": ["In Progress", "Under Transfer", "Completed"],
+    "Reviewer": ["Assigned", "Re Assigned", "Under Transfer", "Closed"],
+    "Admin": ["New", "Assigned", "Re Assigned", "In Progress", "Under Transfer", "Completed", "Closed", "Rejected"],
+}
+
+
+def get_status_updateForm_by_role(incident,role,data=None):
+    form=IncidentStatusUpdateForm(data,instance=incident)
+    allowed_status=ROLE_STATUS_MAP.get(role,[])
+    form.fields['status'].queryset=IncidentStatus.objects.filter(name__in=allowed_status,is_deleted=False)
+    return form
+
+
+@login_required
+@role_level_required(3)
+@audit_trail_decorator
+def ajax_update_incident_status(request):
+    token=request.POST.get("incident_token")
+    role=request.session.get("role_name")
+
+    if not token:
+        return JsonResponse({"success": False, "error": "Missing token"}, status=404)
+    
+    incident = Incident.objects.filter(incident_token=token, is_deleted=False).first()
+
+    if not incident:
+        return JsonResponse({"success": False, "error": "Invalid incident token"}, status=404)
+    form = get_status_updateForm_by_role(incident, role, request.POST)
+
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"success": True, "message": "Status updated successfully"})
+    else:
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)

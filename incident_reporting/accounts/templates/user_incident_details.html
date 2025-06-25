@@ -5,6 +5,7 @@
 
 {% block headersPart %}
     <link rel="stylesheet" href="{% static "css/userincidentDetails.css" %}">
+    
 {% endblock headersPart %}
 
 {% block content %}
@@ -42,6 +43,28 @@
 
         <div class="tab-content">
             <div class="tab-section" id="tab-history">
+
+                {% if user_role in "Admin Reviewer Responder" %}
+                    <div class="status-update-form">
+                        <form id="status-update-form" class="status-inline-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="incident_token" value="{{ incident_details.incident_token }}">
+
+                            <label for="{{ status_form.status.id_for_label }}" class="form-label">Change Incident Status:</label>
+                   
+                            {{ status_form.status }}
+
+                            <button type="submit" class="up-btn-primary">Update</button>
+                        </form>
+
+                        <div id="status-update-message" class="status-message"></div>
+                    </div>
+                {% endif %}
+
+
+
+
+
                 <div class="progress-section">
                     <h2 class="section-title">Investigation Progress</h2>
                     
@@ -173,6 +196,44 @@
 {% block extra_js %}
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).on('submit', '#status-update-form', function (e) {
+            e.preventDefault();
+
+            let form = $(this);
+            let token = $("input[name='incident_token']").val();
+            let status = $("#id_status").val();
+            let csrfToken = $("input[name='csrfmiddlewaretoken']").val();
+
+            $.ajax({
+                url: "{% url 'ajax-update-incident-status' %}",
+                type: "POST",
+                data: {
+                    incident_token: token,
+                    status: status,
+                    csrfmiddlewaretoken: csrfToken
+                },
+                success: function (response) {
+                    $("#status-update-message").html('<span style="color: green;">✅ ' + response.message + '</span>');
+
+                    let selectedStatus = $("#id_status option:selected").text();
+                    $(".status-badge").text(selectedStatus);
+                },
+                error: function (er) {
+                    let errorMsg = "❌ Failed to update status.";
+                    if (er.responseJSON?.error) {
+                        errorMsg += " " + er.responseJSON.error;
+                    }
+                    $("#status-update-message").html('<span style="color: red;">' + errorMsg + '</span>');
+                }
+            });
+        });
+    </script>
+
+
+
+
 
     <script>
         function loadChat(){

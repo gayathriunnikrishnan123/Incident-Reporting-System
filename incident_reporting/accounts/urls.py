@@ -61,4 +61,8 @@ urlpatterns = [
     path('allIncidents/all-divisions/<int:division_id>/departments/', views.division_departments_view, name='division-departments-admin'),
     
 
+    # to update status
+
+     path('incident/ajax-status-update/', views.ajax_update_incident_status, name='ajax-update-incident-status'),
+
 ]

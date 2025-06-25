@@ -1,6 +1,7 @@
 from django import forms
-from incidents.models import Incident, IncidentSeverity
+from incidents.models import Incident, IncidentSeverity, IncidentStatus
 from masterdata.models import Division
+
 
 class IncidentForm(forms.ModelForm):
     file = forms.FileField(
@@ -54,3 +55,18 @@ class IncidentForm(forms.ModelForm):
         if phone and not phone.isdigit():
             raise forms.ValidationError("Phone number should contain digits only.")
         return phone
+
+
+
+
+
+
+class IncidentStatusUpdateForm(forms.ModelForm):
+    status = forms.ModelChoiceField(
+        queryset=IncidentStatus.objects.filter(is_deleted=False),
+        empty_label="Select Status",
+        required=True,
+        widget=forms.Select())
+    class Meta:
+        model = Incident
+        fields = ['status']
