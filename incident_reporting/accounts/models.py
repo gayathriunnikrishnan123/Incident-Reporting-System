@@ -5,9 +5,10 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-from masterdata.models import Department, Division
+from masterdata.models import Department, Division, IncidentStatus
 from accounts.managers import MyCustomUserManager
 from django.db.models import Q, UniqueConstraint
+
 
 # Create your models here.
 
@@ -122,3 +123,16 @@ class RoleMenuMapping(models.Model):
 
     class Meta:
         unique_together = ("role", "menu")
+
+
+
+class RoleStatusMapping(models.Model):
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
+    status = models.ForeignKey(IncidentStatus, on_delete=models.CASCADE)
+    is_deleted = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('role', 'status')
+
+    def __str__(self):
+        return f"{self.role_name} -> {self.status.name}"

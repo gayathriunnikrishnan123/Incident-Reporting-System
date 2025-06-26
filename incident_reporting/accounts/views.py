@@ -7,8 +7,9 @@ from accounts.forms import (
     InternalUserEditForm,
     RoleCreationForm,
     DepartmentProfileForm,
+    StatusProfileForm,
 )
-from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile, Menu
+from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile, Menu, RoleStatusMapping
 from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department, Division
 from django.http import JsonResponse
@@ -69,10 +70,11 @@ def dashboardView(request):
             if depart:
                 request.session['role_name'] = depart.role.name
                 request.session['role_level'] = depart.role.level
+                request.session['role_id']=depart.role.pk
 
     role = request.session.get('role_name', None)
     request.session['menus']=ROLE_MENUS.get(role,[])
-
+    print(request.session['role_level'])
 
     return render(request, "dashboard/dashboard.html")
 
@@ -421,10 +423,15 @@ ROLE_STATUS_MAP = {
 }
 
 
-def get_status_updateForm_by_role(incident,role,data=None):
+def get_status_updateForm_by_role(incident,role_name,data=None):
     form=IncidentStatusUpdateForm(data,instance=incident)
-    allowed_status=ROLE_STATUS_MAP.get(role,[])
-    form.fields['status'].queryset=IncidentStatus.objects.filter(name__in=allowed_status,is_deleted=False)
+    role = Role.objects.filter(name=role_name, is_deleted=False).first()
+    if role:
+        allowed_status_ids = RoleStatusMapping.objects.filter(role=role,is_deleted=False).values_list('status_id', flat=True)
+        form.fields['status'].queryset = IncidentStatus.objects.filter(id__in=allowed_status_ids,is_deleted=False)
+    else:
+        form.fields['status'].queryset = IncidentStatus.objects.none()
+
     return form
 
 
@@ -449,3 +456,59 @@ def ajax_update_incident_status(request):
         return JsonResponse({"success": True, "message": "Status updated successfully"})
     else:
         return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+
+@login_required
+@role_level_required(1)
+@audit_trail_decorator
+def StatusProfileView(request):
+    if request.method=='POST':
+        form=StatusProfileForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("show-status-maps")
+    else:
+        form=StatusProfileForm()
+    allMappings=RoleStatusMapping.objects.filter(is_deleted=False)
+    return render(
+        request,
+        "statusMapping.html",
+        {"form": form, "allMappings": allMappings, "edit_mode": False},
+    )
+
+
+@login_required
+@role_level_required(1)
+@audit_trail_decorator
+def StatusProfileEditView(request,mapId):
+    map=get_object_or_404(RoleStatusMapping,id=mapId)
+    if request.method=='POST':
+        form=StatusProfileForm(request.POST,instance=map)
+        if form.is_valid():
+            form.save()
+            return redirect("show-status-maps")
+    else:
+        form=StatusProfileForm(instance=map)
+    allMappings=RoleStatusMapping.objects.filter(is_deleted=False)
+    return render(
+        request,
+        "statusMapping.html",
+        {"form": form, "allMappings": allMappings, "edit_mode": True},
+    )
+
+
+@login_required
+@role_level_required(1)
+@audit_trail_decorator
+def StatusProfileDeleteView(request,mapId):
+    map=get_object_or_404(RoleStatusMapping,id=mapId)
+    map.is_deleted=True
+    map.save()
+    AuditLog.objects.create(
+        user_email=request.user.email,
+        function_name="StatusProfileDeleteView",
+        action="Soft Delete",
+        path=request.path,
+        message=f"Soft deleted mapping: {map.role}-> {map.status}"
+    )
+    return redirect("show-status-maps")

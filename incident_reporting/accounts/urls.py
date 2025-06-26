@@ -63,6 +63,13 @@ urlpatterns = [
 
     # to update status
 
-     path('incident/ajax-status-update/', views.ajax_update_incident_status, name='ajax-update-incident-status'),
+    path('incident/ajax-status-update/', views.ajax_update_incident_status, name='ajax-update-incident-status'),
+
+
+    # role-status-mapping
+
+    path('status-mappings/',views.StatusProfileView,name='show-status-maps'),
+    path('edit-status-map/<int:mapId>/',views.StatusProfileEditView,name='edit-status-map'),
+    path('delete-status-map/<int:mapId>/',views.StatusProfileDeleteView,name='delete-status-map'),
 
 ]
