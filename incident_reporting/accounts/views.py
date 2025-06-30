@@ -7,13 +7,16 @@ from accounts.forms import (
     InternalUserEditForm,
     RoleCreationForm,
     DepartmentProfileForm,
+    StatusProfileForm,
 )
-from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile, Menu
+from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile, Menu, RoleStatusMapping
 from accounts.decorators import audit_trail_decorator, role_level_required
-from masterdata.models import Department
+from masterdata.models import Department, Division
 from django.http import JsonResponse
-from incidents.models import Incident
-from masterdata.models import Division
+from incidents.models import Incident, IncidentStatus
+from incidents.forms import IncidentStatusUpdateForm
+
+
 # Create your views here.
 
 
@@ -67,10 +70,11 @@ def dashboardView(request):
             if depart:
                 request.session['role_name'] = depart.role.name
                 request.session['role_level'] = depart.role.level
+                request.session['role_id']=depart.role.pk
 
     role = request.session.get('role_name', None)
     request.session['menus']=ROLE_MENUS.get(role,[])
-
+    print(request.session['role_level'])
 
     return render(request, "dashboard/dashboard.html")
 
@@ -356,36 +360,155 @@ def get_my_incidents(request):
 def incident_details_by_token(request,token):
     incident_details=get_object_or_404(Incident, incident_token=token, is_deleted=False)
     attachments=incident_details.attachments.all()
+    role = request.session.get('role_name')
+    form = get_status_updateForm_by_role(incident_details, role)
     for i in attachments:
         print(i)
-    return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments})
+    return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments,'status_form': form,'user_role': role,})
 
+
+
+
+#  for reviewer panel
+
+
+@login_required
+@audit_trail_decorator
+@role_level_required(2)
+def get_my_departments(request):
+    my_division=DepartmentProfile.objects.filter(user=request.user,role__name="Reviewer",  department__isnull=True,is_deleted=False).values_list('division_id', flat=True)
+    print(list(my_division))  
+    my_departments=Department.objects.filter(division_id__in=my_division,is_deleted=False)
+    print(my_departments)
+    return render(request,"all_departments_reviewer.html",{'my_departments':my_departments})
+
+
+@login_required
+@audit_trail_decorator
+@role_level_required(2)
+def get_incidents_under_my_departments(request,dept_id):
+    department = get_object_or_404(Department, id=dept_id)
+    allIncidents=Incident.objects.filter(department_id=dept_id)
+    return render(request,"all_incidents_under_department.html",{'allIncidents':allIncidents,'department':department})
+
+
+# for admin panel
 
 @login_required
 @audit_trail_decorator
 @role_level_required(1) 
 def all_divisions_view(request):
-    role = request.session.get('role_name', None)
-    divisions = Division.objects.prefetch_related('department_set').all()
-    return render(request,"all_divisions.html", {'allDivisions': divisions})
-
-
-def division_departments_view(request, division_id):
-    division = get_object_or_404(Division, pk=division_id, is_deleted=False)
-    departments = Department.objects.filter(division=division, is_deleted=False)
-    return render(request, 'division_departments.html', {'division': division, 'departments': departments})
-
-
+    divisions = Division.objects.all()
+    return render(request,"all_divisions_admin.html", {'allDivisions': divisions})
 
 
 @login_required
 @audit_trail_decorator
-@role_level_required(1)
-def department_incidents_view(request, department_id):
-    department = get_object_or_404(Department, id=department_id, is_deleted=False)
-    incidents = Incident.objects.filter(department=department, is_deleted=False)
-    return render(request, 'department_incidents.html', {
-        'department': department,
-        'incidents': incidents
-    })
+@role_level_required(1) 
+def division_departments_view(request, division_id):
+    division = get_object_or_404(Division, pk=division_id, is_deleted=False)
+    departments = Department.objects.filter(division=division, is_deleted=False)
+    return render(request, 'all_departments_admin.html', {'division': division, 'departments': departments})
 
+
+
+#  to do status update based on our team discussuion
+# we can setup the allowed status rules
+# if its working fine we can move on to db after discussion
+
+ROLE_STATUS_MAP = {
+    "Responder": ["In Progress", "Under Transfer", "Completed"],
+    "Reviewer": ["Assigned", "Re Assigned", "Under Transfer", "Closed"],
+    "Admin": ["New", "Assigned", "Re Assigned", "In Progress", "Under Transfer", "Completed", "Closed", "Rejected"],
+}
+
+
+def get_status_updateForm_by_role(incident,role_name,data=None):
+    form=IncidentStatusUpdateForm(data,instance=incident)
+    role = Role.objects.filter(name=role_name, is_deleted=False).first()
+    if role:
+        allowed_status_ids = RoleStatusMapping.objects.filter(role=role,is_deleted=False).values_list('status_id', flat=True)
+        form.fields['status'].queryset = IncidentStatus.objects.filter(id__in=allowed_status_ids,is_deleted=False)
+    else:
+        form.fields['status'].queryset = IncidentStatus.objects.none()
+
+    return form
+
+
+@login_required
+@role_level_required(3)
+@audit_trail_decorator
+def ajax_update_incident_status(request):
+    token=request.POST.get("incident_token")
+    role=request.session.get("role_name")
+
+    if not token:
+        return JsonResponse({"success": False, "error": "Missing token"}, status=404)
+    
+    incident = Incident.objects.filter(incident_token=token, is_deleted=False).first()
+
+    if not incident:
+        return JsonResponse({"success": False, "error": "Invalid incident token"}, status=404)
+    form = get_status_updateForm_by_role(incident, role, request.POST)
+
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"success": True, "message": "Status updated successfully"})
+    else:
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+
+@login_required
+@role_level_required(1)
+@audit_trail_decorator
+def StatusProfileView(request):
+    if request.method=='POST':
+        form=StatusProfileForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("show-status-maps")
+    else:
+        form=StatusProfileForm()
+    allMappings=RoleStatusMapping.objects.filter(is_deleted=False)
+    return render(
+        request,
+        "statusMapping.html",
+        {"form": form, "allMappings": allMappings, "edit_mode": False},
+    )
+
+
+@login_required
+@role_level_required(1)
+@audit_trail_decorator
+def StatusProfileEditView(request,mapId):
+    map=get_object_or_404(RoleStatusMapping,id=mapId)
+    if request.method=='POST':
+        form=StatusProfileForm(request.POST,instance=map)
+        if form.is_valid():
+            form.save()
+            return redirect("show-status-maps")
+    else:
+        form=StatusProfileForm(instance=map)
+    allMappings=RoleStatusMapping.objects.filter(is_deleted=False)
+    return render(
+        request,
+        "statusMapping.html",
+        {"form": form, "allMappings": allMappings, "edit_mode": True},
+    )
+
+
+@login_required
+@role_level_required(1)
+@audit_trail_decorator
+def StatusProfileDeleteView(request,mapId):
+    map=get_object_or_404(RoleStatusMapping,id=mapId)
+    map.is_deleted=True
+    map.save()
+    AuditLog.objects.create(
+        user_email=request.user.email,
+        function_name="StatusProfileDeleteView",
+        action="Soft Delete",
+        path=request.path,
+        message=f"Soft deleted mapping: {map.role}-> {map.status}"
+    )
+    return redirect("show-status-maps")

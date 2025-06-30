@@ -443,3 +443,94 @@
         white-space: nowrap;
     }
 }
+
+
+/* Status Update Form */
+.status-update-form {
+    margin-top: 20px;
+    /* background-color: #afd5ff; */
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 50px;
+}
+
+.status-inline-form {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* .status-inline-form select,
+.up-btn-primary {
+    height: 40px;
+    font-size: 15px;
+    line-height: 1;
+} */
+
+
+.form-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #2d3748;
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+}
+
+.status-inline-form select {
+    min-width: 200px;
+    padding: 10px 14px;
+    font-size: 15px;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    background: #fff;
+    color: #2d3748;
+}
+
+.status-inline-form select:focus {
+    outline: none;
+    border-color: #667eea;
+    background-color: #f8fbff;
+}
+
+
+.up-btn-primary {
+    height: 40px; 
+    padding: 10px 16px;
+    background-color: #007bff;
+    color: white;
+    font-weight: 500;
+    font-size: 15px;
+    border: none;
+    border-radius: 10px; 
+    cursor: pointer;
+    transition: background 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.up-btn-primary:hover {
+    background-color: #0056b3;
+}
+
+
+.status-message {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.error-message {
+    color: #e53e3e;
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.form-errors {
+    background: rgba(229, 62, 62, 0.1);
+    border: 1px solid rgba(229, 62, 62, 0.2);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 8px;
+}

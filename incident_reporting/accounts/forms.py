@@ -1,6 +1,6 @@
 from django import forms
-from masterdata.models import Department, Division
-from accounts.models import CustomUserProfile, Role, DepartmentProfile
+from masterdata.models import Department, Division,IncidentStatus
+from accounts.models import CustomUserProfile, Role, DepartmentProfile,RoleStatusMapping
 from django.contrib.auth.forms import AuthenticationForm
 
 
@@ -208,3 +208,16 @@ class DepartmentProfileForm(forms.ModelForm):
         model = DepartmentProfile
         fields = ["user", "division", "department", "role", "is_active"]
 
+
+class StatusProfileForm(forms.ModelForm):
+
+    role = forms.ModelChoiceField(
+        queryset=Role.objects.filter(is_deleted=False), empty_label="Select Role"
+    )
+    status = forms.ModelChoiceField(
+        queryset=IncidentStatus.objects.filter(is_deleted=False), empty_label="Select Status"
+    )
+
+    class Meta:
+        model = RoleStatusMapping
+        fields = ["role", "status"]
