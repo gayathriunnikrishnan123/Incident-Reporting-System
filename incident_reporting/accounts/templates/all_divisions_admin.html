@@ -1,0 +1,30 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}All Divisions{% endblock %}
+{% block page_title %}All Divisions{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+
+    {% if allDivisions %}
+
+        {% for division in allDivisions %}
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📦</div>
+                </div>
+                <div class="stat-value"><a href="{% url 'division-departments-admin' division.id %}">{{division.name}}</a></div>
+                <div class="stat-change positive">Show all incidents under the division</div>
+            </div>
+        
+        {% endfor %}
+
+    {% else %}
+
+    <p>No departments found under your division(s).</p>
+    
+    {% endif %}
+</div>
+{% endblock content %}

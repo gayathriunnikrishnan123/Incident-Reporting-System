@@ -83,8 +83,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'Incident_reporting',
-        'USER':'postgres',
-        'PASSWORD':'Postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'Postgres',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -137,12 +137,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.CustomUserProfile'
 
-EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'gayathriunnikrishnan000@gmail.com'
-EMAIL_HOST_PASSWORD = 'yngswshqgabycasv'
+EMAIL_HOST_PASSWORD = 'yngswshqgabycasv'  # Use app password if 2FA enabled
+#DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 

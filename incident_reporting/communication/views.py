@@ -1,49 +1,75 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from communication.models import IncidentMessage, IncidentMessageAttachment
+from communication.forms import IncidentMessageFormPublic, IncidentMessageAttachmentForm, IncidentMessageFormInternal
+from incidents.models import Incident
 from django.http import JsonResponse
-from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
+from django.template.loader import render_to_string
 from django.contrib.auth.decorators import login_required
-from .models import Incident, IncidentMessage
 
-@login_required
-def incident_chat_view(request, incident_id):
-    incident = get_object_or_404(Incident, id=incident_id)
-    messages = incident.messages.select_related('sender').order_by('created_at')
+# Create your views here.
 
-    return render(request, 'chat.html', {
-        'incident_details': incident,
+def ajax_public_chat(request, token):
+    incident = get_object_or_404(Incident, incident_token=token, is_deleted=False)
+    messages = incident.messages.filter(is_internal_only=False).order_by('created_at')
+
+    if request.method == 'POST':
+        form = IncidentMessageFormPublic(request.POST)
+        file_form = IncidentMessageAttachmentForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.incident = incident
+            message.sender = None
+            message.save()
+
+            if file_form.is_valid() and 'file' in request.FILES:
+                for f in request.FILES.getlist('file'):
+                    IncidentMessageAttachment.objects.create(message=message, file=f)
+
+    else:
+        form = IncidentMessageFormPublic()
+        file_form = IncidentMessageAttachmentForm()
+
+    html = render_to_string("communication/public_chat_page.html", {
+        'incident': incident,
         'messages': messages,
-    })
+        'form': form,
+        'file_form': file_form,
+    }, request=request)
+
+    return JsonResponse({'html': html})
+
 
 @login_required
-@csrf_exempt
-def post_chat_message(request, incident_id):
-    if request.method == "POST":
-        message_text = request.POST.get("message", "").strip()
-        is_internal = request.POST.get("is_internal") == "true"
+def ajax_internal_chat(request, token):
+    incident = get_object_or_404(Incident, incident_token=token, is_deleted=False)
+    messages = incident.messages.all().order_by('created_at')
 
-        if not message_text:
-            return JsonResponse({"success": False, "error": "Message is empty"}, status=400)
+    if request.method == 'POST':
+        form = IncidentMessageFormInternal(request.POST)
+        file_form = IncidentMessageAttachmentForm(request.POST, request.FILES)
 
-        try:
-            incident = Incident.objects.get(id=incident_id)
-        except Incident.DoesNotExist:
-            return JsonResponse({"success": False, "error": "Incident not found"}, status=404)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.incident = incident
+            message.sender = request.user
+            message.is_internal_only = form.cleaned_data.get('is_internal_only', False)
+            message.save()
 
-        msg = IncidentMessage.objects.create(
-            incident=incident,
-            sender=request.user,
-            message=message_text,
-            is_internal=is_internal,
-            created_at=timezone.now()
-        )
+            if file_form.is_valid() and 'file' in request.FILES:
+                for f in request.FILES.getlist('file'):
+                    IncidentMessageAttachment.objects.create(message=message, file=f)
+    else:
+        form = IncidentMessageFormInternal()
+        file_form = IncidentMessageAttachmentForm()
 
-        return JsonResponse({
-            "success": True,
-            "sender_name": request.user.fullname,
-            "message": msg.message,
-            "created_at": msg.created_at.strftime("%d %b %Y, %H:%M"),
-            "is_internal": msg.is_internal
-        })
+    html = render_to_string("communication/internal_chat_page.html", {
+        'incident': incident,
+        'messages': messages,
+        'form': form,
+        'file_form': file_form,
+        'user': request.user,
+    }, request=request)
 
-    return JsonResponse({"success": False, "error": "Invalid request method"}, status=405)
+    return JsonResponse({'html': html})

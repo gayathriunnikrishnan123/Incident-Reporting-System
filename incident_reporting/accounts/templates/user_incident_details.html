@@ -5,6 +5,7 @@
 
 {% block headersPart %}
     <link rel="stylesheet" href="{% static "css/userincidentDetails.css" %}">
+    
 {% endblock headersPart %}
 
 {% block content %}
@@ -37,11 +38,33 @@
             <button class="tab active" onclick="switchTab('details')">Incident Details</button>
             <button class="tab" onclick="switchTab('history')">Status History</button>
             <button class="tab" onclick="switchTab('attachments')">Attachments</button>
-            <button class="tab" onclick="switchTab('chat')">Communication</button>
+            <button class="tab" onclick="switchTab('comments')">Chat</button>
         </div>
 
         <div class="tab-content">
             <div class="tab-section" id="tab-history">
+
+                {% if user_role in "Admin Reviewer Responder" %}
+                    <div class="status-update-form">
+                        <form id="status-update-form" class="status-inline-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="incident_token" value="{{ incident_details.incident_token }}">
+
+                            <label for="{{ status_form.status.id_for_label }}" class="form-label">Change Incident Status:</label>
+                   
+                            {{ status_form.status }}
+
+                            <button type="submit" class="up-btn-primary">Update</button>
+                        </form>
+
+                        <div id="status-update-message" class="status-message"></div>
+                    </div>
+                {% endif %}
+
+
+
+
+
                 <div class="progress-section">
                     <h2 class="section-title">Investigation Progress</h2>
                     
@@ -158,13 +181,10 @@
                 
             </div>
 
-            <div class="tab-section" id="tab-chat">
-                <h3 class="section-title">Communication Thread</h3>
-                {% include "chat.html" %}
 
-                
-                
+            <div class="tab-section" id="tab-comments" data-token="{{ incident_details.incident_token }}">                
             </div>
+            
         </div>
     </div>
 
@@ -174,6 +194,83 @@
 
 
 {% block extra_js %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).on('submit', '#status-update-form', function (e) {
+            e.preventDefault();
+
+            let form = $(this);
+            let token = $("input[name='incident_token']").val();
+            let status = $("#id_status").val();
+            let csrfToken = $("input[name='csrfmiddlewaretoken']").val();
+
+            $.ajax({
+                url: "{% url 'ajax-update-incident-status' %}",
+                type: "POST",
+                data: {
+                    incident_token: token,
+                    status: status,
+                    csrfmiddlewaretoken: csrfToken
+                },
+                success: function (response) {
+                    $("#status-update-message").html('<span style="color: green;">✅ ' + response.message + '</span>');
+
+                    let selectedStatus = $("#id_status option:selected").text();
+                    $(".status-badge").text(selectedStatus);
+                },
+                error: function (er) {
+                    let errorMsg = "❌ Failed to update status.";
+                    if (er.responseJSON?.error) {
+                        errorMsg += " " + er.responseJSON.error;
+                    }
+                    $("#status-update-message").html('<span style="color: red;">' + errorMsg + '</span>');
+                }
+            });
+        });
+    </script>
+
+
+
+
+
+    <script>
+        function loadChat(){
+            var token=$("#tab-comments").data('token');
+            if(token){
+                console.log(token)
+            }
+            $.get("/communication/internal-chat/" + token + "/", function(response) {
+            $("#tab-comments").html(response.html);
+        });
+        }
+        loadChat();
+
+        {% comment %} for sending messages {% endcomment %}
+         $(document).on('submit', '#internal-message-form', function(e) {
+            e.preventDefault();
+
+            var token = $("#tab-comments").data('token');
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: "/communication/internal-chat/" + token + "/",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $("#tab-comments").html(response.html);
+                    loadChat(); 
+                },
+                error: function(er) {
+                    alert("Error sending message.",er);
+                }
+            });
+        });
+
+    </script>
 
     <script>
         function goBack() {
@@ -186,6 +283,9 @@
             });            
             event.target.classList.add('active');
             console.log('Switching to tab:', tabName);
+            if(tabName==='comments'){
+                loadChat()
+            }
             document.querySelectorAll('.tab-section').forEach(section => {
                 section.style.display = 'none';
             });

@@ -50,6 +50,26 @@ urlpatterns = [
     path('allIncidents/all-incidents/',views.get_all_incidents,name='all-user-incidents'),
     path('allIncidents/my-incidents/',views.get_my_incidents,name='my-incidents'),
     path('allIncidents/all-incidents/<str:token>/',views.incident_details_by_token,name='get-incident-by-token'),
+
+    # all departments for reviewer panel
+    path('allIncidents/all-departments/',views.get_my_departments,name='get-my-departments'),
+    path('allIncidents/all-departments/<int:dept_id>',views.get_incidents_under_my_departments,name='get-department-incidents'),
+
+    #  for admin panel
+
+    path('allIncidents/all-divisions/', views.all_divisions_view, name='all-divisions-admin'), 
+    path('allIncidents/all-divisions/<int:division_id>/departments/', views.division_departments_view, name='division-departments-admin'),
     
+
+    # to update status
+
+    path('incident/ajax-status-update/', views.ajax_update_incident_status, name='ajax-update-incident-status'),
+
+
+    # role-status-mapping
+
+    path('status-mappings/',views.StatusProfileView,name='show-status-maps'),
+    path('edit-status-map/<int:mapId>/',views.StatusProfileEditView,name='edit-status-map'),
+    path('delete-status-map/<int:mapId>/',views.StatusProfileDeleteView,name='delete-status-map'),
 
 ]

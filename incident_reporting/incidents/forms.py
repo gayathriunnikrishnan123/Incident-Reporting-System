@@ -1,6 +1,7 @@
 from django import forms
-from incidents.models import Incident
+from incidents.models import Incident, IncidentSeverity, IncidentStatus
 from masterdata.models import Division
+
 
 class IncidentForm(forms.ModelForm):
     file = forms.FileField(
@@ -12,7 +13,14 @@ class IncidentForm(forms.ModelForm):
         queryset=Division.objects.filter(is_deleted=False),
         empty_label="Select Division",
         required=False,
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select()
+    )
+
+    priority=forms.ModelChoiceField(
+        queryset=IncidentSeverity.objects.filter(is_deleted=False),
+        empty_label="Select Severity",
+        required=False,
+        widget=forms.Select()
     )
     class Meta:
         model = Incident
@@ -26,12 +34,11 @@ class IncidentForm(forms.ModelForm):
             'phone',
         ]
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter incident title'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Describe the issue'}),
-            'department': forms.Select(attrs={'class': 'form-control'}),
-            'priority': forms.Select(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Optional'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Optional'}),
+            'title': forms.TextInput(attrs={'placeholder': 'Enter incident title'}),
+            'description': forms.Textarea(attrs={'placeholder': 'Describe the issue'}),
+            'department': forms.Select(),
+            'email': forms.EmailInput(attrs={'placeholder': 'Optional'}),
+            'phone': forms.TextInput(attrs={'placeholder': 'Optional'}),
         }
         labels = {
             'title': 'Incident Title',
@@ -48,3 +55,18 @@ class IncidentForm(forms.ModelForm):
         if phone and not phone.isdigit():
             raise forms.ValidationError("Phone number should contain digits only.")
         return phone
+
+
+
+
+
+
+class IncidentStatusUpdateForm(forms.ModelForm):
+    status = forms.ModelChoiceField(
+        queryset=IncidentStatus.objects.filter(is_deleted=False),
+        empty_label="Select Status",
+        required=True,
+        widget=forms.Select())
+    class Meta:
+        model = Incident
+        fields = ['status']

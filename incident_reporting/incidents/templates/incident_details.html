@@ -37,6 +37,7 @@
                 <button class="tab active" onclick="switchTab('details')">Incident Details</button>
                 <button class="tab" onclick="switchTab('history')">Status History</button>
                 <button class="tab" onclick="switchTab('attachments')">Attachments</button>
+                <button class="tab" onclick="switchTab('comments')">Chat</button>
             </div>
 
             <div class="tab-content">
@@ -107,8 +108,8 @@
                             <h3 class="section-title">Incident Information</h3>
                             
                             <div class="detail-row">
-                                <span class="detail-label">Incident Type</span>
-                                <span class="detail-value">Security Breach</span>
+                                <span class="detail-label">Incident Title</span>
+                                <span class="detail-value">{{incident_details.title}}</span>
                             </div>
                             
                             <div class="detail-row">
@@ -156,13 +157,53 @@
                     {% endfor %}
                     
                 </div>
+
+                <div class="tab-section" id="tab-comments" data-token="{{ incident_details.incident_token }}"></div>
             </div>
         </div>
     </div>
 
 
 
-    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        function loadChat(){
+            var token=$("#tab-comments").data('token');
+            if(token){
+                console.log(token)
+            }
+            $.get("/communication/public-chat/" + token + "/", function(response) {
+            $("#tab-comments").html(response.html);
+            });
+        }
+        loadChat();
+
+
+        {% comment %} for sending messages {% endcomment %}
+         $(document).on('submit', '#public-message-form', function(e) {
+            e.preventDefault();
+
+            var token = $("#tab-comments").data('token');
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: "/communication/public-chat/" + token + "/",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    $("#tab-comments").html(response.html);
+                    loadChat(); 
+                },
+                error: function(er) {
+                    alert("Error sending message.",er);
+                }
+            });
+        });
+    </script>
+       
     <script>
         function goBack() {
             window.history.back();
@@ -174,6 +215,9 @@
             });            
             event.target.classList.add('active');
             console.log('Switching to tab:', tabName);
+            if(tabName==='comments'){
+                loadChat()
+            }
             document.querySelectorAll('.tab-section').forEach(section => {
                 section.style.display = 'none';
             });

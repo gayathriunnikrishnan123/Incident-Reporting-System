@@ -1,4 +1,5 @@
 from django.shortcuts import render,get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from incidents.models import Incident, IncidentAttachment
 from incidents.forms import IncidentForm
 from masterdata.models import IncidentSeverity, IncidentStatus
@@ -39,51 +40,79 @@ def incident_details_by_token(request,token):
 
 def submit_incident(request):
     if request.method == 'POST':
-        form = IncidentForm(request.POST)
+        form = IncidentForm(request.POST, request.FILES)
         if form.is_valid():
             incident = form.save(commit=False)
 
-
+            # Set default status
             try:
                 incident.status = IncidentStatus.objects.get(name="New")
             except IncidentStatus.DoesNotExist:
                 incident.status = None
 
+            # Determine assignment
+            admin_profile = DepartmentProfile.objects.filter(role__name="Admin", is_active=True, is_deleted=False, division__isnull=True, department__isnull=True).first()
+            responder_profile = None
+            reviewer_profile = None
 
             if incident.department:
-                responder_profile = DepartmentProfile.objects.filter(department=incident.department,role__name="Responder",is_active=True,is_deleted=False).first()
+                responder_profile = DepartmentProfile.objects.filter(department=incident.department, role__name="Responder", is_active=True, is_deleted=False).first()
                 if responder_profile:
                     incident.assigned_to = responder_profile.user
 
-            elif incident.division:
-
-                reviewer_profile = DepartmentProfile.objects.filter(division=incident.division,role__name="Reviewer",is_active=True,is_deleted=False).first()
+            if not incident.assigned_to and incident.division:
+                reviewer_profile = DepartmentProfile.objects.filter(division=incident.division, role__name="Reviewer", is_active=True, is_deleted=False).first()
                 if reviewer_profile:
                     incident.assigned_to = reviewer_profile.user
 
-            if not incident.assigned_to:
-                admin_profile = DepartmentProfile.objects.filter(role__name="Admin",is_active=True,is_deleted=False,division__isnull=True,department__isnull=True).first()   
-                if admin_profile:
-                    incident.assigned_to = admin_profile.user
+            if not incident.assigned_to and admin_profile:
+                incident.assigned_to = admin_profile.user
 
-
+            # Save the incident
             incident.save()
 
-            files = request.FILES.getlist('file')
-            for f in files:
+            # Attach files
+            for f in request.FILES.getlist('file'):
                 IncidentAttachment.objects.create(incident=incident, file=f)
 
-
+            # Send token to reporter
             if incident.email:
                 send_mail(
                     subject="Your Incident Token",
                     message=f"Thank you for reporting. Your incident token is: {incident.incident_token}",
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[incident.email],
+                    fail_silently=True,
+                )
+
+            # Notify relevant parties
+            notification_emails = []
+            if incident.department:
+                if responder_profile:
+                    notification_emails.append(responder_profile.user.email)
+                if incident.division and reviewer_profile:
+                    notification_emails.append(reviewer_profile.user.email)
+                if admin_profile:
+                    notification_emails.append(admin_profile.user.email)
+            elif incident.division:
+                if reviewer_profile:
+                    notification_emails.append(reviewer_profile.user.email)
+                if admin_profile:
+                    notification_emails.append(admin_profile.user.email)
+            else:
+                if admin_profile:
+                    notification_emails.append(admin_profile.user.email)
+
+            if notification_emails:
+                send_mail(
+                    subject=f"New Incident Reported - Token: {incident.incident_token}",
+                    message=f"A new incident has been submitted.\n\nDetails:\nToken: {incident.incident_token}\nSubmitted by: {incident.email or 'Anonymous'}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=notification_emails,
+                    fail_silently=True,
                 )
 
             return redirect('incident_success', token=incident.incident_token)
-
     else:
         form = IncidentForm()
 

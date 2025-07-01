@@ -1,0 +1,57 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Departments in Your Division</h2>
+
+<div class="card-container">
+    {% for dept in my_departments %}
+        <div class="stat-card">
+            <div class="stat-header">
+                <div class="stat-icon">🏢</div>
+            </div>
+            <div class="stat-value">
+                <a href="{% url 'department_wise_incidents' dept.id %}">{{ dept.name }}</a>
+            </div>
+            <div class="stat-change positive">{{ dept.division.name }}</div>
+        </div>
+    {% empty %}
+        <p>No departments found.</p>
+    {% endfor %}
+</div>
+
+<style>
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+.stat-card {
+    width: 200px;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    text-align: center;
+    transition: 0.3s;
+}
+.stat-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.stat-icon {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+.stat-value a {
+    font-weight: bold;
+    font-size: 18px;
+    text-decoration: none;
+    color: #007bff;
+}
+.stat-change {
+    margin-top: 5px;
+    color: #28a745;
+    font-size: 14px;
+}
+</style>
+{% endblock %}

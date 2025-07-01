@@ -1,0 +1,49 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Incidents in Department: {{ department.name }}</h2>
+
+<table class="incident-table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Token</th>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Reported At</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for incident in allIncidents %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ incident.incident_token }}</td>
+                <td>{{ incident.title }}</td>
+                <td>{{ incident.status }}</td>
+                <td>{{ incident.created_at|date:"d M Y H:i" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">No incidents found for this department.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<style>
+.incident-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+.incident-table th, .incident-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+}
+.incident-table th {
+    background-color: #f1f1f1;
+}
+</style>
+{% endblock %}
