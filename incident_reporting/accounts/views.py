@@ -13,7 +13,7 @@ from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
 from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department, Division
 from django.http import JsonResponse
-from incidents.models import Incident, IncidentStatus
+from incidents.models import Incident, IncidentStatus, IncidentTransferLog
 from incidents.forms import IncidentStatusUpdateForm
 
 
@@ -364,7 +364,8 @@ def incident_details_by_token(request,token):
     form = get_status_updateForm_by_role(incident_details, role)
     for i in attachments:
         print(i)
-    return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments,'status_form': form,'user_role': role,})
+    transfer_log = IncidentTransferLog.objects.filter(incident=incident_details).order_by('-id').first()
+    return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments,'status_form': form,'user_role': role,'transfer_log': transfer_log,})
 
 
 
@@ -423,39 +424,197 @@ ROLE_STATUS_MAP = {
 }
 
 
-def get_status_updateForm_by_role(incident,role_name,data=None):
-    form=IncidentStatusUpdateForm(data,instance=incident)
+def get_status_updateForm_by_role(incident, role_name, data=None):
+    form = IncidentStatusUpdateForm(data, instance=incident)
+
     role = Role.objects.filter(name=role_name, is_deleted=False).first()
     if role:
-        allowed_status_ids = RoleStatusMapping.objects.filter(role=role,is_deleted=False).values_list('status_id', flat=True)
-        form.fields['status'].queryset = IncidentStatus.objects.filter(id__in=allowed_status_ids,is_deleted=False)
+        allowed_status_ids = RoleStatusMapping.objects.filter(role=role, is_deleted=False).values_list('status_id', flat=True)
+        form.fields['status'].queryset = IncidentStatus.objects.filter(id__in=allowed_status_ids, is_deleted=False)
     else:
         form.fields['status'].queryset = IncidentStatus.objects.none()
 
+    form.fields['to_division'].queryset = Division.objects.filter(is_deleted=False)
+
+    if role_name == "Admin":
+        form.fields['to_department'].queryset = Department.objects.filter(is_deleted=False)
+    elif role_name == "Reviewer":
+        form.fields['to_department'].queryset = Department.objects.filter(
+            division_id=incident.division_id,
+            is_deleted=False
+        ).exclude(id=incident.department_id)
+    else:
+        form.fields['to_department'].queryset = Department.objects.none()
+
     return form
+
+
+
+
+
 
 
 @login_required
 @role_level_required(3)
 @audit_trail_decorator
 def ajax_update_incident_status(request):
-    token=request.POST.get("incident_token")
-    role=request.session.get("role_name")
+    token = request.POST.get("incident_token")
+    role = request.session.get("role_name")
 
     if not token:
         return JsonResponse({"success": False, "error": "Missing token"}, status=404)
-    
+
     incident = Incident.objects.filter(incident_token=token, is_deleted=False).first()
-
     if not incident:
-        return JsonResponse({"success": False, "error": "Invalid incident token"}, status=404)
-    form = get_status_updateForm_by_role(incident, role, request.POST)
+        return JsonResponse({"success": False, "error": "Invalid token"}, status=404)
 
-    if form.is_valid():
-        form.save()
-        return JsonResponse({"success": True, "message": "Status updated successfully"})
-    else:
+    form = get_status_updateForm_by_role(incident, role, request.POST)
+    if not form.is_valid():
         return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+    updated_status = form.cleaned_data.get("status")
+    reason = request.POST.get("transfer_reason", "").strip()
+    to_division_id = request.POST.get("to_division")
+    to_department_id = request.POST.get("to_department")
+
+    if updated_status.name == "Under Transfer" and role == "Responder":
+        to_division = None
+        if to_division_id:
+            try:
+                to_division = Division.objects.get(id=to_division_id, is_deleted=False)
+            except Division.DoesNotExist:
+                return JsonResponse({"success": False, "error": "Invalid suggested division"}, status=400)
+
+        IncidentTransferLog.objects.create(
+            incident=incident,
+            from_division=incident.division,
+            from_department=incident.department,
+            to_division=to_division or incident.division,
+            to_department=None,
+            reason=reason,
+            initiated_by=request.user,
+        )
+
+        incident.status = updated_status
+        incident.department = None  # Important: clear department
+        incident.is_under_transfer = True
+        incident.needs_admin_transfer=False
+
+        if to_division and str(to_division.id) != str(incident.division_id):
+            incident.needs_admin_transfer = True
+
+        reviewer_profile = DepartmentProfile.objects.filter(
+            division=to_division or incident.division,
+            department__isnull=True,
+            role__name="Reviewer",
+            is_active=True,
+            is_deleted=False
+        ).first()
+
+        if reviewer_profile:
+            incident.assigned_to = reviewer_profile.user
+
+        incident.save()
+        return JsonResponse({"success": True, "message": "Transfer initiated successfully."})
+
+
+    elif updated_status.name == "Re Assigned" and role in ["Reviewer", "Admin"]:
+        if not to_division_id:
+            return JsonResponse({"success": False, "error": "Target division is required."}, status=400)
+
+        try:
+            to_division = Division.objects.get(id=to_division_id, is_deleted=False)
+        except Division.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Invalid target division"}, status=400)
+
+        same_division = str(to_division.id) == str(incident.division_id)
+
+
+        if role == "Reviewer" and not same_division:
+            incident.is_under_transfer = True
+            incident.save()
+            IncidentTransferLog.objects.create(
+                incident=incident,
+                from_division=incident.division,
+                from_department=incident.department,
+                to_division=to_division,
+                to_department=None,
+                reason=reason or "Escalated for cross-division reassignment",
+                initiated_by=request.user,
+                approved_by=None
+            )
+
+            return JsonResponse({
+                "success": False,
+                "error": "Reviewer cannot reassign across divisions. Admin has been notified."
+            }, status=403)
+
+
+        to_department = None
+        assigned_user = None
+
+        if to_department_id:
+            try:
+                to_department = Department.objects.get(id=to_department_id, is_deleted=False)
+            except Department.DoesNotExist:
+                return JsonResponse({"success": False, "error": "Invalid department"}, status=400)
+
+            responder = DepartmentProfile.objects.filter(
+                department=to_department,
+                role__name="Responder",
+                is_active=True,
+                is_deleted=False
+            ).first()
+            if responder:
+                assigned_user = responder.user
+
+
+        if not assigned_user:
+            reviewer = DepartmentProfile.objects.filter(
+                division=to_division,
+                department__isnull=True,
+                role__name="Reviewer",
+                is_active=True,
+                is_deleted=False
+            ).first()
+            if reviewer:
+                assigned_user = reviewer.user
+
+        IncidentTransferLog.objects.create(
+            incident=incident,
+            from_division=incident.division,
+            from_department=incident.department,
+            to_division=to_division,
+            to_department=to_department,
+            reason=reason,
+            initiated_by=request.user,
+            approved_by=request.user
+        )
+
+        incident.division = to_division
+        incident.department = to_department
+        incident.status = updated_status
+        incident.is_under_transfer = False
+        incident.manually_assigned = True
+        incident.assigned_to = assigned_user
+
+        if role == "Admin":
+            incident.needs_admin_transfer = False
+
+        incident.save()
+        return JsonResponse({"success": True, "message": "Reassignment successful."})
+
+
+    else:
+        form.save()
+        return JsonResponse({"success": True, "message": "Status updated successfully."})
+
+
+
+
+
+
+
 
 
 @login_required
@@ -512,3 +671,38 @@ def StatusProfileDeleteView(request,mapId):
         message=f"Soft deleted mapping: {map.role}-> {map.status}"
     )
     return redirect("show-status-maps")
+
+
+
+
+#  for pending request
+
+@login_required
+@role_level_required(2)
+def pending_transfer_requests(request):
+    under_transfer_status = IncidentStatus.objects.filter(name="Under Transfer").first()
+
+    if request.session.get("role_name") == "Admin":
+        incidents = Incident.objects.filter(
+            status=under_transfer_status,
+            is_under_transfer=True,
+            is_deleted=False
+        )
+    else:
+        incidents = Incident.objects.filter(
+            status=under_transfer_status,
+            is_under_transfer=True,
+            is_deleted=False,
+            assigned_to=request.user
+        )
+
+
+    return render(request, "pending_requests.html", {"allIncidents": incidents})
+
+
+@login_required
+@role_level_required(1)
+def pending_escalation_requests(request):
+    escalated_incidents = Incident.objects.filter(needs_admin_transfer=True,is_deleted=False,status__name="Re Assigned")
+    return render(request, "escalated_requests.html", {"allIncidents": escalated_incidents,})
+

@@ -72,21 +72,22 @@ class DepartmentProfile(models.Model):
         constraints = [
             UniqueConstraint(
                 fields=["user", "role"],
-                condition=Q(division__isnull=True, department__isnull=True),
+                condition=Q(division__isnull=True, department__isnull=True,is_deleted=False),
                 name="user already exist with same role and null division, department",
             ),
             UniqueConstraint(
                 fields=["user", "division", "role"],
-                condition=Q(department__isnull=True),
+                condition=Q(department__isnull=True,is_deleted=False),
                 name="Unique User-division-role",
             ),
             UniqueConstraint(
                 fields=["user", "department", "role"],
-                condition=Q(division__isnull=True),
+                condition=Q(division__isnull=True,is_deleted=False),
                 name="Unique User-department-role",
             ),
             UniqueConstraint(
                 fields=["user", "division", "department", "role"],
+                condition=Q(is_deleted=False),
                 name="Already exist",
             ),
         ]

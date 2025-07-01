@@ -32,6 +32,7 @@ class Incident(models.Model):
 
     
     manually_assigned = models.BooleanField(default=False)
+    is_under_transfer = models.BooleanField(default=False)
     
     incident_token = models.CharField(max_length=50, unique=True, default=generate_incident_token)
 
@@ -42,6 +43,7 @@ class Incident(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     is_deleted = models.BooleanField(default=False)
+    needs_admin_transfer = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
@@ -55,3 +57,16 @@ class IncidentAttachment(models.Model):
 
     def __str__(self):
         return f"Attachment for {self.incident.incident_token}"
+    
+
+
+class IncidentTransferLog(models.Model):
+    incident = models.ForeignKey(Incident, on_delete=models.CASCADE)
+    from_division = models.ForeignKey(Division, on_delete=models.SET_NULL, null=True, related_name='transfer_from_division')
+    to_division = models.ForeignKey(Division, on_delete=models.SET_NULL, null=True, related_name='transfer_to_division')
+    from_department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='transfer_from_dept')
+    to_department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name='transfer_to_dept')
+    initiated_by = models.ForeignKey(CustomUserProfile, on_delete=models.SET_NULL, null=True)
+    reason = models.TextField()
+    approved_by = models.ForeignKey(CustomUserProfile, on_delete=models.SET_NULL, null=True, related_name='transfer_approved_by')
+    created_at = models.DateTimeField(auto_now_add=True)

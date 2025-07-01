@@ -72,4 +72,15 @@ urlpatterns = [
     path('edit-status-map/<int:mapId>/',views.StatusProfileEditView,name='edit-status-map'),
     path('delete-status-map/<int:mapId>/',views.StatusProfileDeleteView,name='delete-status-map'),
 
+
+    # pending req view
+
+    path("incident/pending-requests/", views.pending_transfer_requests, name="pending_transfer_requests"),
+
+
+    # escalation req
+
+    path("incident/escalation-requests/", views.pending_escalation_requests, name="pending_escalation_requests"),
+
+
 ]

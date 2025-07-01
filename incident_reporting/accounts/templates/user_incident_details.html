@@ -54,6 +54,21 @@
                    
                             {{ status_form.status }}
 
+                            <div id="transfer-reason-group" style="display: none; margin-top: 10px;">
+                                <label for="{{ status_form.transfer_reason.id_for_label }}">Reason for Transfer</label>
+                                {{ status_form.transfer_reason }}
+                            </div>
+
+                            <div id="to-division-group" style="display: none; margin-top: 10px;">
+                                <label for="{{ status_form.to_division.id_for_label }}">To Division</label>
+                                {{ status_form.to_division }}
+                            </div>
+
+                            <div id="to-department-group" style="display: none; margin-top: 10px;">
+                                <label for="{{ status_form.to_department.id_for_label }}">To Department</label>
+                                {{ status_form.to_department }}
+                            </div>
+
                             <button type="submit" class="up-btn-primary">Update</button>
                         </form>
 
@@ -62,6 +77,17 @@
                 {% endif %}
 
 
+
+                {% if transfer_log %}
+                    <div class="card">
+                        <h4>Transfer Details</h4>
+                        <p><strong>From:</strong> {{ transfer_log.from_division }} / {{ transfer_log.from_department }}</p>
+                        <p><strong>To:</strong> {{ transfer_log.to_division }}{% if transfer_log.to_department %} / {{ transfer_log.to_department }}{% endif %}</p>
+                        <p><strong>Reason:</strong> {{ transfer_log.reason }}</p>
+                        <p><strong>Approved By:</strong> {{ transfer_log.approved_by }}</p>
+                        <p><strong>Initiated By:</strong> {{ transfer_log.initiated_by }}</p>
+                    </div>
+                {% endif %}
 
 
 
@@ -114,7 +140,11 @@
                         
                         <div class="detail-row">
                             <span class="detail-label">Department</span>
-                            <span class="detail-value">{{ incident_details.assigned_to.departmentprofile_set.first.department }}</span>
+                            <span class="detail-value">{{ incident_details.department }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Division</span>
+                            <span class="detail-value">{{ incident_details.division }}</span>
                         </div>
                         
                         <div class="detail-row">
@@ -198,6 +228,92 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const statusSelect = document.getElementById("id_status");
+            const reasonGroup = document.getElementById("transfer-reason-group");
+            const toDivisionGroup = document.getElementById("to-division-group");
+            const toDepartmentGroup = document.getElementById("to-department-group");
+
+            const divisionSelect = document.getElementById("id_to_division");
+            const departmentSelect = document.getElementById("id_to_department");
+
+            const role = "{{ request.session.role_name|default:'' }}";
+            const currentDivisionId = "{{ incident_details.division.id|default:'' }}";
+
+            function clearDepartmentOptions(message = "Select Department", disable = false) {
+                departmentSelect.innerHTML = `<option value="">${message}</option>`;
+                departmentSelect.disabled = disable;
+            }
+
+            function loadDepartmentsForDivision(divisionId) {
+                clearDepartmentOptions();
+                fetch(`/accounts/ajax/load-departments/?division_id=${divisionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        clearDepartmentOptions();
+                        data.forEach(dept => {
+                            const option = document.createElement("option");
+                            option.value = dept.id;
+                            option.textContent = dept.name;
+                            departmentSelect.appendChild(option);
+                        });
+                    })
+                    .catch(() => {
+                        clearDepartmentOptions("Error loading", true);
+                    });
+            }
+
+            function handleDivisionChange() {
+                const selectedDivisionId = divisionSelect.value;
+                if (!selectedDivisionId) {
+                    clearDepartmentOptions("Select Department", true);
+                    return;
+                }
+
+                if (role === "Reviewer") {
+                    if (selectedDivisionId === currentDivisionId) {
+                        departmentSelect.disabled = false;
+                        loadDepartmentsForDivision(selectedDivisionId);
+                    } else {
+                        clearDepartmentOptions("Cross-division → Admin only", true);
+                    }
+                } else if (role === "Admin") {
+                    departmentSelect.disabled = false;
+                    loadDepartmentsForDivision(selectedDivisionId);
+                } else {
+                    clearDepartmentOptions("Not allowed", true);
+                }
+            }
+
+            function toggleTransferFields() {
+                const selectedText = statusSelect.options[statusSelect.selectedIndex].text;
+                const isTransfer = selectedText === "Under Transfer";
+                const isReassign = selectedText === "Re Assigned";
+
+                reasonGroup.style.display = isTransfer || isReassign ? "block" : "none";
+                toDivisionGroup.style.display = isReassign ? "block" : "none";
+                toDepartmentGroup.style.display = isReassign ? "block" : "none";
+
+                if (isReassign) handleDivisionChange();
+                else clearDepartmentOptions("Select Department", true);
+            }
+
+            if (divisionSelect) divisionSelect.addEventListener("change", handleDivisionChange);
+            if (statusSelect) statusSelect.addEventListener("change", toggleTransferFields);
+
+            toggleTransferFields();
+        });
+    </script>
+
+
+
+
+
+
+
+
+
+    <script>
         $(document).on('submit', '#status-update-form', function (e) {
             e.preventDefault();
 
@@ -205,15 +321,14 @@
             let token = $("input[name='incident_token']").val();
             let status = $("#id_status").val();
             let csrfToken = $("input[name='csrfmiddlewaretoken']").val();
+            let formData = new FormData(this);
 
             $.ajax({
                 url: "{% url 'ajax-update-incident-status' %}",
                 type: "POST",
-                data: {
-                    incident_token: token,
-                    status: status,
-                    csrfmiddlewaretoken: csrfToken
-                },
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: function (response) {
                     $("#status-update-message").html('<span style="color: green;">✅ ' + response.message + '</span>');
 

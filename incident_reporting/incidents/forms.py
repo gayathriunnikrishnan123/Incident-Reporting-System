@@ -1,6 +1,6 @@
 from django import forms
 from incidents.models import Incident, IncidentSeverity, IncidentStatus
-from masterdata.models import Division
+from masterdata.models import Division, Department
 
 
 class IncidentForm(forms.ModelForm):
@@ -67,6 +67,9 @@ class IncidentStatusUpdateForm(forms.ModelForm):
         empty_label="Select Status",
         required=True,
         widget=forms.Select())
+    transfer_reason = forms.CharField(required=False, widget=forms.Textarea(attrs={'rows': 2}))
+    to_division = forms.ModelChoiceField(queryset=Division.objects.filter(is_deleted=False),empty_label="Select Division", required=False)
+    to_department = forms.ModelChoiceField(queryset=Department.objects.filter(is_deleted=False), required=False)
     class Meta:
         model = Incident
         fields = ['status']

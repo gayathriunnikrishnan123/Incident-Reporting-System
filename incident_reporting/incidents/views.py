@@ -49,24 +49,42 @@ def submit_incident(request):
             except IncidentStatus.DoesNotExist:
                 incident.status = None
 
+            assigned_user = None
 
             if incident.department:
-                responder_profile = DepartmentProfile.objects.filter(department=incident.department,role__name="Responder",is_active=True,is_deleted=False).first()
+                responder_profile = DepartmentProfile.objects.filter(
+                    department=incident.department,
+                    role__name="Responder",
+                    is_active=True,
+                    is_deleted=False
+                ).first()
                 if responder_profile:
-                    incident.assigned_to = responder_profile.user
+                    assigned_user = responder_profile.user
 
-            elif incident.division:
-
-                reviewer_profile = DepartmentProfile.objects.filter(division=incident.division,role__name="Reviewer",is_active=True,is_deleted=False).first()
+            if not assigned_user and incident.division:
+                reviewer_profile = DepartmentProfile.objects.filter(
+                    division=incident.division,
+                    department__isnull=True,
+                    role__name="Reviewer",
+                    is_active=True,
+                    is_deleted=False
+                ).first()
                 if reviewer_profile:
-                    incident.assigned_to = reviewer_profile.user
+                    assigned_user = reviewer_profile.user
 
-            if not incident.assigned_to:
-                admin_profile = DepartmentProfile.objects.filter(role__name="Admin",is_active=True,is_deleted=False,division__isnull=True,department__isnull=True).first()   
+
+            if not assigned_user:
+                admin_profile = DepartmentProfile.objects.filter(
+                    role__name="Admin",
+                    is_active=True,
+                    is_deleted=False,
+                    division__isnull=True,
+                    department__isnull=True
+                ).first()
                 if admin_profile:
-                    incident.assigned_to = admin_profile.user
+                    assigned_user = admin_profile.user
 
-
+            incident.assigned_to = assigned_user
             incident.save()
 
             files = request.FILES.getlist('file')
