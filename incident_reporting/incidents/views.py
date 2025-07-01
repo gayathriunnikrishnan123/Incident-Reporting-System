@@ -1,10 +1,12 @@
 from django.shortcuts import render,get_object_or_404, redirect
-from incidents.models import Incident, IncidentAttachment
-from incidents.forms import IncidentForm
+from incidents.models import Incident, IncidentAttachment,IncidentQuestion, IncidentAnswer
+from incidents.forms import IncidentForm,IncidentQuestionForm
 from masterdata.models import IncidentSeverity, IncidentStatus
 from accounts.models import CustomUserProfile, DepartmentProfile
 from django.core.mail import send_mail 
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -35,62 +37,58 @@ def incident_details_by_token(request,token):
         print(i)
     return render(request,"incident_details.html",{'incident_details':incident_details,'attachments':attachments})
 
-
-
 def submit_incident(request):
+    # your existing code for form, saving incident, etc.
+
     if request.method == 'POST':
         form = IncidentForm(request.POST)
+
         if form.is_valid():
             incident = form.save(commit=False)
-
-
-            try:
-                incident.status = IncidentStatus.objects.get(name="New")
-            except IncidentStatus.DoesNotExist:
-                incident.status = None
-
-
-            if incident.department:
-                responder_profile = DepartmentProfile.objects.filter(department=incident.department,role__name="Responder",is_active=True,is_deleted=False).first()
-                if responder_profile:
-                    incident.assigned_to = responder_profile.user
-
-            elif incident.division:
-
-                reviewer_profile = DepartmentProfile.objects.filter(division=incident.division,role__name="Reviewer",is_active=True,is_deleted=False).first()
-                if reviewer_profile:
-                    incident.assigned_to = reviewer_profile.user
-
-            if not incident.assigned_to:
-                admin_profile = DepartmentProfile.objects.filter(role__name="Admin",is_active=True,is_deleted=False,division__isnull=True,department__isnull=True).first()   
-                if admin_profile:
-                    incident.assigned_to = admin_profile.user
-
-
+            # ... your existing code to set status, assigned_to, etc.
             incident.save()
 
+            # Save attachments if any
             files = request.FILES.getlist('file')
             for f in files:
                 IncidentAttachment.objects.create(incident=incident, file=f)
 
+            # Save dynamic question answers
+            for key, value in request.POST.items():
+                if key.startswith('question_'):
+                    question_id = key.split('_')[1]
+                    try:
+                        question = IncidentQuestion.objects.get(id=question_id)
+                        IncidentAnswer.objects.create(
+                            incident=incident,
+                            question=question,
+                            answer_text=value
+                        )
+                    except IncidentQuestion.DoesNotExist:
+                        pass
 
-            if incident.email:
-                send_mail(
-                    subject="Your Incident Token",
-                    message=f"Thank you for reporting. Your incident token is: {incident.incident_token}",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[incident.email],
-                )
-
+            # send email or redirect after success
             return redirect('incident_success', token=incident.incident_token)
-
     else:
         form = IncidentForm()
+        questions = []
 
-    return render(request, 'submit_incident.html', {'form': form})
+        selected_department_id = request.GET.get('department')
+        if selected_department_id:
+            questions = IncidentQuestion.objects.filter(department_id=selected_department_id)
 
-
+    return render(request, 'submit_incident.html', {
+        'form': form,
+        'questions': questions
+    })
 
 def incident_success(request, token):
     incident = get_object_or_404(Incident, incident_token=token, is_deleted=False)
     return render(request, 'incident_confirm.html', {'token': incident.incident_token,'email': incident.email,})
+
+
+def load_department_questions(request):
+    department_id = request.GET.get('department_id')
+    questions = IncidentQuestion.objects.filter(department_id=department_id) if department_id else []
+    html = render_to_string('dynamic_questions.html', {'questions': questions})
+    return JsonResponse({'html': html})

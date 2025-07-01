@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -14,9 +15,8 @@ from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department, Division
 from django.http import JsonResponse
 from incidents.models import Incident, IncidentStatus
-from incidents.forms import IncidentStatusUpdateForm
-
-
+from incidents.forms import IncidentStatusUpdateForm,IncidentQuestionForm
+from incidents.models import Incident, IncidentAttachment,IncidentQuestion, IncidentAnswer
 # Create your views here.
 
 
@@ -512,3 +512,29 @@ def StatusProfileDeleteView(request,mapId):
         message=f"Soft deleted mapping: {map.role}-> {map.status}"
     )
     return redirect("show-status-maps")
+
+
+
+def create_question(request):
+    form = IncidentQuestionForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        form = IncidentQuestionForm()
+
+    questions = IncidentQuestion.objects.select_related('department').order_by('-id')
+    return render(request, 'create_question.html', {'form': form, 'questions': questions})
+
+def edit_question(request, pk):
+    question = get_object_or_404(IncidentQuestion, pk=pk)
+    form = IncidentQuestionForm(request.POST or None, instance=question)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('create_question')
+    questions = IncidentQuestion.objects.all()
+    return render(request, 'create_question.html', {'form': form, 'questions': questions})
+
+def delete_question(request, pk):
+    question = get_object_or_404(IncidentQuestion, pk=pk)
+    if request.method == 'POST':
+        question.delete()
+        return redirect('create_question')

@@ -55,3 +55,21 @@ class IncidentAttachment(models.Model):
 
     def __str__(self):
         return f"Attachment for {self.incident.incident_token}"
+    
+
+
+class IncidentQuestion(models.Model):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.CharField(max_length=255)
+    is_required = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.department.name} - {self.question_text}"
+
+class IncidentAnswer(models.Model):
+    incident = models.ForeignKey(Incident, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(IncidentQuestion, on_delete=models.CASCADE)
+    answer_text = models.TextField()
+
+    def __str__(self):
+        return f"Answer to '{self.question.question_text}'"

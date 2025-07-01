@@ -1,5 +1,5 @@
 from django import forms
-from incidents.models import Incident, IncidentSeverity, IncidentStatus
+from incidents.models import Incident, IncidentSeverity, IncidentStatus,IncidentAnswer, IncidentQuestion
 from masterdata.models import Division
 
 
@@ -70,3 +70,29 @@ class IncidentStatusUpdateForm(forms.ModelForm):
     class Meta:
         model = Incident
         fields = ['status']
+
+
+
+class DynamicIncidentAnswerForm(forms.Form):
+    def __init__(self, *args, questions=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if questions:
+            for question in questions:
+                self.fields[f"question_{question.id}"] = forms.CharField(
+                    label=question.question_text,
+                    required=question.is_required
+                )
+class IncidentQuestionForm(forms.ModelForm):
+    class Meta:
+        model = IncidentQuestion
+        fields = ['department', 'question_text', 'is_required']
+        widgets = {
+            'department': forms.Select(attrs={'class': 'form-control'}),
+            'question_text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your question'}),
+            'is_required': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'department': 'Select Department',
+            'question_text': 'Question Text',
+            'is_required': 'Is Required?',
+        }

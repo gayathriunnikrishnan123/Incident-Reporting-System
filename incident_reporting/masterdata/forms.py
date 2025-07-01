@@ -1,25 +1,22 @@
+
 from django import forms
 from masterdata.models import Department, Division, IncidentSeverity, IncidentStatus
 
 class DepartmentForm(forms.ModelForm):
     division = forms.ModelChoiceField(
-        queryset=Division.objects.filter(is_deleted=False),  # Only active divisions
+        queryset=Division.objects.filter(is_deleted=False),
         empty_label="Select Division",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-
     class Meta:
         model = Department
         fields = ['name', 'division', 'description']
         widgets = {
-            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={
+                'class': 'form-control',
+            }),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Ensures dropdown does not show soft-deleted divisions
-        self.fields['division'].queryset = Division.objects.filter(is_deleted=False)
 
 class DivisionForm(forms.ModelForm):
 
@@ -84,12 +81,3 @@ class IncidentStatusForm(forms.ModelForm):
             if qs.exists():
                 raise forms.ValidationError("Status already exists")
         return cleaned_data
-
-
-from django import forms
-from .models import RoleStatusMapping
-
-class RoleStatusMappingForm(forms.ModelForm):
-    class Meta:
-        model = RoleStatusMapping
-        fields = ['role', 'status', 'is_active']

@@ -1,3 +1,4 @@
+
 from django.db import models
 
 # Create your models here.
@@ -5,7 +6,7 @@ from django.db import models
 class Division(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    is_deleted = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False) 
 
     def __str__(self):
         return self.name
@@ -15,11 +16,10 @@ class Department(models.Model):
     name = models.CharField(max_length=100)
     division = models.ForeignKey(Division, on_delete=models.PROTECT)
     description = models.TextField(blank=True)
-    is_deleted = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False) 
 
     def __str__(self):
         return self.name
-
     
 
 
@@ -42,21 +42,3 @@ class IncidentSeverity(models.Model):
 
     def __str__(self):
         return self.level
-
-
-
-# Remove this line:
-# from accounts.models import Role
-
-from django.apps import apps
-
-class RoleStatusMapping(models.Model):
-    role = models.ForeignKey('accounts.Role', on_delete=models.CASCADE) 
-    status = models.ForeignKey('masterdata.IncidentStatus', on_delete=models.CASCADE)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        unique_together = ('role', 'status')
-
-    def __str__(self):
-        return f"{self.role} -> {self.status}"

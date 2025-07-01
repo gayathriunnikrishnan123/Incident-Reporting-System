@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.contrib.auth.models import (
     User,
@@ -28,7 +29,8 @@ class CustomUserProfile(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)  # Allows login to admin panel
     is_admin = models.BooleanField(default=False)  # Custom field for our understanding
-    is_deleted = models.BooleanField(default=False)
+
+    is_deleted = models.BooleanField(default=False) # as per meeting 
 
     objects = MyCustomUserManager()
 

@@ -1,0 +1,14 @@
+
+{% for question in questions %}
+  <div class="form-group">
+    <label for="id_question_{{ question.id }}">{{ question.question_text }}{% if question.is_required %}*{% endif %}</label>
+    <textarea
+      id="id_question_{{ question.id }}"
+      name="question_{{ question.id }}"
+      rows="3"
+      {% if question.is_required %} required {% endif %}
+      ></textarea>
+  </div>
+{% empty %}
+  <p>No questions found for this department.</p>
+{% endfor %}

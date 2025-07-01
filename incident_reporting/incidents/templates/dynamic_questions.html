@@ -1,0 +1,8 @@
+{% for question in questions %}
+    <div class="form-group">
+        <label for="id_question_{{ question.id }}">{{ question.question_text }}</label>
+        <input type="text" name="question_{{ question.id }}" id="id_question_{{ question.id }}" class="form-control" {% if question.is_required %} required {% endif %}>
+    </div>
+{% empty %}
+    <p>No questions for this department.</p>
+{% endfor %}
