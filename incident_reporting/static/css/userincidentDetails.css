@@ -446,91 +446,182 @@
 
 
 /* Status Update Form */
+
 .status-update-form {
-    margin-top: 20px;
-    /* background-color: #afd5ff; */
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 50px;
+    width: 100%;
+    max-width: 100%;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 25px 30px;
+    margin: 30px 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.status-update-form h4 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #1f2937;
+    font-weight: 600;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 10px;
 }
 
 .status-inline-form {
     display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 16px;
 }
 
-/* .status-inline-form select,
-.up-btn-primary {
-    height: 40px;
-    font-size: 15px;
-    line-height: 1;
-} */
-
-
-.form-label {
-    font-size: 16px;
-    font-weight: 500;
-    color: #2d3748;
-    margin-bottom: 6px;
-    letter-spacing: -0.2px;
+.status-inline-form label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 5px;
 }
 
-.status-inline-form select {
-    min-width: 200px;
+.status-inline-form select,
+.status-inline-form input[type="text"],
+.status-inline-form textarea {
+    width: 100%;
     padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background-color: #f9fafb;
     font-size: 15px;
-    border-radius: 10px;
-    border: 2px solid #e2e8f0;
-    background: #fff;
-    color: #2d3748;
+    color: #111827;
+    transition: border-color 0.3s ease;
 }
 
-.status-inline-form select:focus {
+.status-inline-form select:focus,
+.status-inline-form input:focus,
+.status-inline-form textarea:focus {
+    border-color: #3b82f6;
     outline: none;
-    border-color: #667eea;
-    background-color: #f8fbff;
+    background-color: #ffffff;
 }
-
 
 .up-btn-primary {
-    height: 40px; 
-    padding: 10px 16px;
-    background-color: #007bff;
+    background-color: #3b82f6;
     color: white;
-    font-weight: 500;
-    font-size: 15px;
+    font-weight: 600;
     border: none;
-    border-radius: 10px; 
+    padding: 10px 20px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
 }
 
 .up-btn-primary:hover {
-    background-color: #0056b3;
+    background-color: #2563eb;
 }
-
 
 .status-message {
-    margin-top: 10px;
+    margin-top: 15px;
     font-size: 14px;
+    color: #10b981; /* green for success messages */
 }
 
-.error-message {
-    color: #e53e3e;
-    font-size: 14px;
-    font-weight: 500;
-    margin-top: 4px;
+#transfer-reason-group,
+#to-division-group,
+#to-department-group {
+    transition: all 0.3s ease-in-out;
 }
 
-.form-errors {
-    background: rgba(229, 62, 62, 0.1);
-    border: 1px solid rgba(229, 62, 62, 0.2);
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-top: 8px;
+
+
+
+
+
+
+
+
+/* transfer details */
+
+.trans-card-container {
+    width: 100%;
+    padding: 0 0rem;
+    margin-bottom: 60px;
+    box-sizing: border-box;
 }
+
+.trans-card-container .trans-card {
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 25px 30px;
+    margin: 20px 0;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.trans-card:hover {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+
+.trans-card h4 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 10px;
+}
+
+.trans-card p {
+    font-size: 16px;
+    color: #4b5563;
+    margin: 10px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.trans-card p strong {
+    min-width: 130px;
+    color: #111827;
+    font-weight: 600;
+    display: inline-block;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+    .trans-card {
+        padding: 20px;
+    }
+
+    .trans-card h4 {
+        font-size: 20px;
+    }
+
+    .trans-card p {
+        flex-direction: column;
+        gap: 4px;
+        font-size: 15px;
+    }
+
+    .trans-card p strong {
+        min-width: auto;
+        display: block;
+        margin-bottom: 2px;
+    }
+}
+
+@media (max-width: 480px) {
+    .trans-card {
+        padding: 15px;
+    }
+
+    .trans-card h4 {
+        font-size: 18px;
+    }
+
+    .trans-card p {
+        font-size: 14px;
+    }
+}
+

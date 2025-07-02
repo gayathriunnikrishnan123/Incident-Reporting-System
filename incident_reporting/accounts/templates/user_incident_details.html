@@ -78,16 +78,19 @@
 
 
 
-                {% if transfer_log %}
-                    <div class="card">
+                <div class="trans-card-container">
+                    {% if transfer_log %}
+                        <div class="trans-card">
                         <h4>Transfer Details</h4>
                         <p><strong>From:</strong> {{ transfer_log.from_division }} / {{ transfer_log.from_department }}</p>
                         <p><strong>To:</strong> {{ transfer_log.to_division }}{% if transfer_log.to_department %} / {{ transfer_log.to_department }}{% endif %}</p>
                         <p><strong>Reason:</strong> {{ transfer_log.reason }}</p>
                         <p><strong>Approved By:</strong> {{ transfer_log.approved_by }}</p>
                         <p><strong>Initiated By:</strong> {{ transfer_log.initiated_by }}</p>
-                    </div>
-                {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+
 
 
 

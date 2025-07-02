@@ -519,6 +519,7 @@ def ajax_update_incident_status(request):
 
 
     elif updated_status.name == "Re Assigned" and role in ["Reviewer", "Admin"]:
+        assigned_status = IncidentStatus.objects.filter(name="Assigned").first()
         if not to_division_id:
             return JsonResponse({"success": False, "error": "Target division is required."}, status=400)
 
@@ -532,6 +533,7 @@ def ajax_update_incident_status(request):
 
         if role == "Reviewer" and not same_division:
             incident.is_under_transfer = True
+            incident.needs_admin_transfer = True
             incident.save()
             IncidentTransferLog.objects.create(
                 incident=incident,
@@ -593,7 +595,7 @@ def ajax_update_incident_status(request):
 
         incident.division = to_division
         incident.department = to_department
-        incident.status = updated_status
+        incident.status = assigned_status
         incident.is_under_transfer = False
         incident.manually_assigned = True
         incident.assigned_to = assigned_user
