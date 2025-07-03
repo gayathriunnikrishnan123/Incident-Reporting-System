@@ -15,7 +15,8 @@ from masterdata.models import Department, Division
 from django.http import JsonResponse
 from incidents.models import Incident, IncidentStatus, IncidentTransferLog,IncidentQuestion, IncidentAnswer
 from incidents.forms import IncidentStatusUpdateForm,IncidentQuestionForm
-
+from django.core.mail import send_mail 
+from django.conf import settings
 
 # Create your views here.
 
@@ -515,6 +516,29 @@ def ajax_update_incident_status(request):
         if reviewer_profile:
             incident.assigned_to = reviewer_profile.user
 
+        # Notify the reviewers of the division
+        reviewers = DepartmentProfile.objects.filter(
+            division=to_division or incident.division,
+            role__name="Reviewer",
+            department__isnull=True,
+            is_active=True,
+            is_deleted=False
+        ).select_related('user')
+
+        reviewer_emails = [r.user.email for r in reviewers]
+
+        try:
+            send_mail(
+                subject=f"[Transfer Request] Incident {incident.incident_token}",
+                message=f"The responder has requested a transfer for incident {incident.incident_token}.\n\nReason: {reason or 'Not specified.'}\nDivision: {incident.division}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=reviewer_emails,
+                fail_silently=False
+            )
+        except Exception as e:
+            print("Failed to notify reviewers about transfer request:", e)
+
+
         incident.save()
         return JsonResponse({"success": True, "message": "Transfer initiated successfully."})
 
@@ -593,6 +617,20 @@ def ajax_update_incident_status(request):
             initiated_by=request.user,
             approved_by=request.user
         )
+        admins = CustomUserProfile.objects.filter(is_superuser=True, is_active=True)
+        admin_emails = [admin.email for admin in admins]
+
+        try:
+            send_mail(
+                subject=f"[Escalation Alert] Incident {incident.incident_token}",
+                message=f"A reviewer has escalated incident {incident.incident_token} to another division.\n\nReason: {reason or 'Not specified.'}\nFrom: {incident.division}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=admin_emails,
+                fail_silently=False
+            )
+        except Exception as e:
+            print("Failed to notify admin about escalation:", e)
+
 
         incident.division = to_division
         incident.department = to_department
@@ -600,6 +638,21 @@ def ajax_update_incident_status(request):
         incident.is_under_transfer = False
         incident.manually_assigned = True
         incident.assigned_to = assigned_user
+
+        # ✅ Send email to newly assigned person
+        if assigned_user and assigned_user.email:
+            try:
+                send_mail(
+                    subject=f"[Incident Reassigned] Token: {incident.incident_token}",
+                    message=f"You have been assigned a new incident.\n\nToken: {incident.incident_token}\nDivision: {incident.division}\nDepartment: {incident.department}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[assigned_user.email],
+                    fail_silently=False
+                )
+            except Exception as e:
+                print("Failed to send reassignment email:", e)       
+                
+
 
         if role == "Admin":
             incident.needs_admin_transfer = False
