@@ -73,10 +73,21 @@ urlpatterns = [
     path('delete-status-map/<int:mapId>/',views.StatusProfileDeleteView,name='delete-status-map'),
 
 
-      # dynamic question
+    # pending req view
+
+    path("incident/pending-requests/", views.pending_transfer_requests, name="pending_transfer_requests"),
+
+
+    # escalation req
+
+    path("incident/escalation-requests/", views.pending_escalation_requests, name="pending_escalation_requests"),
+
+
+       # dynamic questionAdd commentMore actions
 
     path('questions/', views.create_question, name='create_question'),
     path('questions/<int:pk>/edit/', views.edit_question, name='edit-question'),       
     path('questions/<int:pk>/delete/', views.delete_question, name='delete-question'), 
+
 
 ]

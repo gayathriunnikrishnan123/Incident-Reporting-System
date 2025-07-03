@@ -1,7 +1,7 @@
 {% extends 'dashboard/base.html' %}
 {% load static %}
 {% block title %}All Incidents - Dashboard{% endblock %}
-{% block page_title %}My Incidents{% endblock %}
+{% block page_title %}Pending Incidents{% endblock %}
 
 {% block headersPart %}
     <link rel="stylesheet" href="{% static 'css/user_form.css' %}">
@@ -21,9 +21,6 @@
 {% endblock headersPart %}
 
 {% block content %}
-
-
-
 
 <div class="table-wrapper">
     <table id="userTable" class="display responsive nowrap" style="width:100%">
@@ -45,7 +42,7 @@
                 <td>{{ incident.incident_token }}</td>
                 <td>{{ incident.assigned_to.fullname }}</td>
                 <td>{{ incident.priority }}</td>
-                <td>{{ incident.updated_at }}</td>
+                <td>{{ incident.created_at }}</td>
                 <td>{{ incident.status }}</td>
                 <td>
                     <a href="{% url 'get-incident-by-token' incident.incident_token %}"class="action-btn edit-btn">View</a>
