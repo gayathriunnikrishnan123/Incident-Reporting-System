@@ -45,7 +45,7 @@
                 <td>{{ incident.incident_token }}</td>
                 <td>{{ incident.assigned_to.fullname }}</td>
                 <td>{{ incident.priority }}</td>
-                <td>{{ incident.created_at }}</td>
+                <td>{{ incident.updated_at }}</td>
                 <td>{{ incident.status }}</td>
                 <td>
                     <a href="{% url 'get-incident-by-token' incident.incident_token %}"class="action-btn edit-btn">View</a>

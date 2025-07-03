@@ -1,0 +1,89 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Question Management{% endblock %}
+{% block page_title %}Incident Questions{% endblock %}
+
+{% block headersPart %}
+<link rel="stylesheet" href="{% static 'css/user_form.css' %}">
+<link rel="stylesheet" href="{% static 'css/userMaster.css' %}">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="mainCont">
+    <div class="form-container">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <div class="error-message">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="submit-btn">Add Question</button>
+            <button type="reset" class="reset-btn">Reset</button>
+        </form>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="questionTable" class="display responsive nowrap" style="width:100%">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Department</th>
+                    <th>Question</th>
+                    <th>Required?</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in questions %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ q.department.name }}</td>
+                    <td>{{ q.question_text }}</td>
+                    <td>{{ q.is_required|yesno:"Yes,No" }}</td>
+                    <td>
+                        <a href="{% url 'edit-question' q.id %}" class="action-btn edit-btn">Edit</a>
+                        <form method="post" action="{% url 'delete-question' q.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn delete-btn"
+                                onclick="return confirm('Are you sure you want to delete this question?');">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No questions added yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        $('#questionTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            lengthMenu: [5, 10, 25, 50],
+            lengthChange: true,
+            searching: true,
+            ordering: true
+        });
+    });
+</script>
+{% endblock %}

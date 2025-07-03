@@ -138,6 +138,26 @@
                         <h3 class="section-title">Incident Description</h3>
                         <div style="color: #666; line-height: 1.6; padding: 20px 0;">{{incident_details.description}}</div>
                     </div>
+                    
+                    <div class="detail-card" style="margin-top: 30px;">
+                        <h3 class="section-title">Dynamic Information</h3>
+                        <div style="color: #666; line-height: 1.6; padding: 20px 0;">
+                            <div class="qa-card-container">
+                                {% for answer in incident_answers %}
+                                    <div class="qa-card">
+                                    <div class="question">
+                                        <strong>Q:</strong> {{ answer.question.question_text }}
+                                    </div>
+                                    <div class="answer">
+                                        <strong>A:</strong> {{ answer.answer_text|default:"Not answered" }}
+                                    </div>
+                                    </div>
+                                    {% empty %}
+                                    <p>No answers submitted.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="tab-section" id="tab-attachments">

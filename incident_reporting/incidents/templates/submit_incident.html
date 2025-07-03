@@ -6,6 +6,7 @@
   <title>Submit Incident</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="{% static "css/submitIncForm.css" %}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
   <header class="navbar">
@@ -21,7 +22,7 @@
   <div class="form-wrapper">
     <h2>Submit an Incident (Anonymous)</h2>
 
-    <form method="post" enctype="multipart/form-data">
+    {% comment %} <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {% for field in form %}
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -30,50 +31,87 @@
           <div class="error">{{ field.errors|striptags }}</div>
         {% endif %}
       {% endfor %}
+        <div id="dynamicQuestions">
+            {% include 'partial_questions.html' %}
+        </div>
+      <button type="submit">Submit Incident</button>
+    </form> {% endcomment %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for field in form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="error">{{ field.errors|striptags }}</div>
+        {% endif %}
+
+        {% if field.name == 'department' %}
+          <div id="dynamicQuestions">
+            {% include 'partial_questions.html' %}
+          </div>
+        {% endif %}
+      {% endfor %}
 
       <button type="submit">Submit Incident</button>
     </form>
+
   </div>
 
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script>
-      $(document).ready(function(){
+    <script>
+        $(document).ready(function () {
+            $("#id_department").prop("disabled", true);
+            $("#id_division").change(function () {
+            var divisionId = $(this).val();
 
-          $("#id_department").prop("disabled", true);
+            if (divisionId) {
+                $.ajax({
+                url: "{% url 'ajax_load_departments' %}",
+                data: { division_id: divisionId },
+                success: function (data) {
+                    var departmentSelect = $("#id_department");
+                    departmentSelect.empty();
+                    departmentSelect.append('<option value="">Select Department</option>');
+                    $.each(data, function (index, dept) {
+                    departmentSelect.append('<option value="' + dept.id + '">' + dept.name + '</option>');
+                    });
+                    departmentSelect.prop("disabled", false);
+                },
+                error: function () {
+                    console.error("Failed to fetch departments");
+                }
+                });
+            } else {
+                $("#id_department").empty();
+                $("#id_department").append('<option value="">Select Department</option>');
+                $("#id_department").prop("disabled", true);
+                $("#dynamicQuestions").empty();
+            }
+            });
 
+            // Load dynamic questions when department changes
+            $("#id_department").change(function () {
+            var departmentId = $(this).val();
 
-          $("#id_division").change(function () {
-              var divisionId = $(this).val();
-              console.log(divisionId);
+            if (departmentId) {
+                $.ajax({
+                url: "{% url 'load_department_questions' %}",
+                data: { department_id: departmentId },
+                success: function (data) {
+                    $("#dynamicQuestions").html(data.html);
+                },
+                error: function () {
+                    console.error("Failed to load questions");
+                    $("#dynamicQuestions").html('<p>Failed to load questions.</p>');
+                }
+                });
+            } else {
+                $("#dynamicQuestions").empty();
+            }
+            });
+        });
+    </script>
 
-              if (divisionId) {
-                  $.ajax({
-                      url: "{% url 'ajax_load_departments' %}",
-                      data: {
-                          division_id: divisionId
-                      },
-                      success: function (data) {
-                          var departmentSelect = $("#id_department");
-                          departmentSelect.empty();
-                          departmentSelect.append('<option value="">Select Department</option>');
-                          $.each(data, function (index, dept) {
-                              departmentSelect.append('<option value="' + dept.id + '">' + dept.name + '</option>');
-                          });
-                          departmentSelect.prop("disabled", false); 
-                      },
-                      error: function () {
-                          console.error("Failed to fetch departments");
-                      }
-                  });
-              } else {
-
-                  $("#id_department").empty();
-                  $("#id_department").append('<option value="">Select Department</option>');
-                  $("#id_department").prop("disabled", true);
-              }
-          });
-      });
-  </script>
 </body>
 </html>

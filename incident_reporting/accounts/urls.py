@@ -83,4 +83,11 @@ urlpatterns = [
     path("incident/escalation-requests/", views.pending_escalation_requests, name="pending_escalation_requests"),
 
 
+       # dynamic questionAdd commentMore actions
+
+    path('questions/', views.create_question, name='create_question'),
+    path('questions/<int:pk>/edit/', views.edit_question, name='edit-question'),       
+    path('questions/<int:pk>/delete/', views.delete_question, name='delete-question'), 
+
+
 ]

@@ -13,8 +13,8 @@ from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
 from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department, Division
 from django.http import JsonResponse
-from incidents.models import Incident, IncidentStatus, IncidentTransferLog
-from incidents.forms import IncidentStatusUpdateForm
+from incidents.models import Incident, IncidentStatus, IncidentTransferLog,IncidentQuestion, IncidentAnswer
+from incidents.forms import IncidentStatusUpdateForm,IncidentQuestionForm
 
 
 # Create your views here.
@@ -365,7 +365,8 @@ def incident_details_by_token(request,token):
     for i in attachments:
         print(i)
     transfer_log = IncidentTransferLog.objects.filter(incident=incident_details).order_by('-id').first()
-    return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments,'status_form': form,'user_role': role,'transfer_log': transfer_log,})
+    incident_answers=IncidentAnswer.objects.filter(incident=incident_details)
+    return render(request,"user_incident_details.html",{'incident_details':incident_details,'attachments':attachments,'status_form': form,'user_role': role,'transfer_log': transfer_log,'incident_answers':incident_answers})
 
 
 
@@ -708,3 +709,42 @@ def pending_escalation_requests(request):
     escalated_incidents = Incident.objects.filter(needs_admin_transfer=True,is_deleted=False,status__name="Re Assigned")
     return render(request, "escalated_requests.html", {"allIncidents": escalated_incidents,})
 
+
+
+
+# dynamic questions
+@login_required
+@role_level_required(1)
+@audit_trail_decorator
+def create_question(request):
+    form = IncidentQuestionForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        form = IncidentQuestionForm()
+
+    questions = IncidentQuestion.objects.select_related('department').order_by('-id')
+    return render(request, 'create_question.html', {'form': form, 'questions': questions})
+
+
+@login_required
+@role_level_required(1)
+@audit_trail_decorator
+def edit_question(request, pk):
+    question = get_object_or_404(IncidentQuestion, pk=pk)
+    form = IncidentQuestionForm(request.POST or None, instance=question)
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('create_question')
+    questions = IncidentQuestion.objects.all()
+    return render(request, 'create_question.html', {'form': form, 'questions': questions})
+
+
+
+@login_required
+@role_level_required(1)
+@audit_trail_decorator
+def delete_question(request, pk):
+    question = get_object_or_404(IncidentQuestion, pk=pk)
+    if request.method == 'POST':
+        question.delete()
+        return redirect('create_question')

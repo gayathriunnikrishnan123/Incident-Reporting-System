@@ -70,3 +70,20 @@ class IncidentTransferLog(models.Model):
     reason = models.TextField()
     approved_by = models.ForeignKey(CustomUserProfile, on_delete=models.SET_NULL, null=True, related_name='transfer_approved_by')
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class IncidentQuestion(models.Model):
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.CharField(max_length=255)
+    is_required = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.department.name} - {self.question_text}"
+
+class IncidentAnswer(models.Model):
+    incident = models.ForeignKey(Incident, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(IncidentQuestion, on_delete=models.CASCADE)
+    answer_text = models.TextField()
+
+    def __str__(self):
+        return f"Answer to '{self.question.question_text}'"
