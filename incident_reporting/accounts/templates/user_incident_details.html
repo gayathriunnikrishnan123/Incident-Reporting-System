@@ -97,31 +97,31 @@
                 <div class="progress-section">
                     <h2 class="section-title">Investigation Progress</h2>
                     
-                    <div class="progress-tracker">
+                    <div class="progress-tracker" data-status="{{ incident_details.status.name }}">
                         <div class="progress-bar">
-                            <div class="progress-fill"></div>
+                            <div class="progress-fill" id="progressFillBar" style="width: 0%;"></div>
                         </div>
                         
                         <div class="progress-steps">
-                            <div class="step completed">
+                            <div class="step">
                                 <div class="step-icon"></div>
                                 <div class="step-label">Submitted</div>
                                 <div class="step-date">Jun 16, 2025</div>
                             </div>
                             
-                            <div class="step completed">
+                            <div class="step">
                                 <div class="step-icon"></div>
                                 <div class="step-label">Under Review</div>
                                 <div class="step-date">Jun 16, 2025</div>
                             </div>
                             
-                            <div class="step current">
+                            <div class="step">
                                 <div class="step-icon"></div>
                                 <div class="step-label">Investigating</div>
                                 <div class="step-date">Jun 17, 2025</div>
                             </div>
                             
-                            <div class="step pending">
+                            <div class="step">
                                 <div class="step-icon"></div>
                                 <div class="step-label">Resolved</div>
                                 <div class="step-date">Pending</div>
@@ -328,13 +328,6 @@
     </script>
 
 
-
-
-
-
-
-
-
     <script>
         $(document).on('submit', '#status-update-form', function (e) {
             e.preventDefault();
@@ -367,9 +360,6 @@
             });
         });
     </script>
-
-
-
 
 
     <script>
@@ -428,21 +418,6 @@
             });
             document.getElementById(`tab-${tabName}`).style.display = 'block';
         }
-        
-        function updateProgress() {
-            const progressFill = document.querySelector('.progress-fill');
-            const currentStep = document.querySelector('.step.current');
-            
-            setTimeout(() => {
-                progressFill.style.width = '75%';
-            }, 3000);
-        }
-        
-        setInterval(() => {
-            console.log('Checking for incident updates...');
-            // API call (gayathri)
-        }, 30000);
-        
 
         document.addEventListener('DOMContentLoaded', function() {
             
@@ -460,6 +435,60 @@
             });
         });
     </script>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tracker = document.querySelector(".progress-tracker");
+            console.log(tracker.dataset)
+            const status = tracker?.dataset?.status || "";
+            const fillBar = document.getElementById("progressFillBar");
+
+            const steps = document.querySelectorAll(".progress-steps .step");
+            let currentStep = 0;
+
+            switch (status.toLowerCase()) {
+                case "new":
+                    currentStep = 0;
+                    fillBar.style.width = "10%";
+                    break;
+                case "in progress":
+                    currentStep = 1;
+                    fillBar.style.width = "40%";
+                    break;
+                case "under transfer":
+                case "re assigned":
+                    currentStep = 2;
+                    fillBar.style.width = "60%";
+                    break;
+                case "resolved":
+                case "completed":
+                    currentStep = 3;
+                    fillBar.style.width = "90%";
+                    break;
+                case "closed":
+                    currentStep = 3;
+                    fillBar.style.width = "100%";
+                    break;
+                default:
+                    currentStep = 0;
+                    fillBar.style.width = "0%";
+            }
+
+
+            steps.forEach((step, index) => {
+                step.classList.remove("completed", "current", "pending");
+                if (index < currentStep) {
+                    step.classList.add("completed");
+                } else if (index === currentStep) {
+                    step.classList.add("current");
+                } else {
+                    step.classList.add("pending");
+                }
+            });
+        });
+    </script>
+
 
 
 {% endblock extra_js %}

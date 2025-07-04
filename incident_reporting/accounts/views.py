@@ -15,7 +15,8 @@ from masterdata.models import Department, Division
 from django.http import JsonResponse
 from incidents.models import Incident, IncidentStatus, IncidentTransferLog,IncidentQuestion, IncidentAnswer
 from incidents.forms import IncidentStatusUpdateForm,IncidentQuestionForm
-
+from django.core.mail import send_mail
+from django.conf import settings
 
 # Create your views here.
 
@@ -497,7 +498,7 @@ def ajax_update_incident_status(request):
         )
 
         incident.status = updated_status
-        incident.department = None  # Important: clear department
+        incident.department = None  
         incident.is_under_transfer = True
         incident.needs_admin_transfer=False
 
@@ -515,7 +516,18 @@ def ajax_update_incident_status(request):
         if reviewer_profile:
             incident.assigned_to = reviewer_profile.user
 
+
         incident.save()
+
+        if reviewer_profile and reviewer_profile.user.email:
+            subject = f"Incident {incident.incident_token} is Under Transfer"
+            message = (
+                f"Incident {incident.incident_token} has been marked as 'Under Transfer' by {request.user.fullname}.\n\n"
+                f"Reason: {reason or 'No reason provided'}\n"
+                f"Please review and reassign it accordingly."
+            )
+            send_incident_notification_email(reviewer_profile.user.email, subject, message)
+
         return JsonResponse({"success": True, "message": "Transfer initiated successfully."})
 
 
@@ -547,10 +559,36 @@ def ajax_update_incident_status(request):
                 approved_by=None
             )
 
+            admin_profiles = DepartmentProfile.objects.filter(role__name="Admin",is_active=True,is_deleted=False).select_related("user")
+
+            for admin_profile in admin_profiles:
+                admin_user = admin_profile.user
+                if admin_user and admin_user.email:
+                    send_incident_notification_email(
+                        admin_user.email,
+                        f"[Admin Action Required] Incident {incident.incident_token} Escalated",
+                                    f"""
+                        Dear {admin_user.fullname},
+
+                        A cross-division reassignment request has been made by Reviewer: {request.user.get_full_name()}.
+
+                        Incident: {incident.incident_token}
+                        Current Division: {incident.division.name}
+                        Target Division: {to_division.name}
+                        Reason: {reason or 'No reason provided'}
+
+                        This incident requires your approval and reassignment.
+
+                        Regards,
+                        Incident Management System
+
+                        """)
+
+
             return JsonResponse({
-                "success": False,
-                "error": "Reviewer cannot reassign across divisions. Admin has been notified."
-            }, status=403)
+                "success": True,
+                "message": "Cross-division reassignment sent to Admin."
+            })
 
 
         to_department = None
@@ -605,11 +643,23 @@ def ajax_update_incident_status(request):
             incident.needs_admin_transfer = False
 
         incident.save()
+        if assigned_user and assigned_user.email:
+            send_incident_notification_email(
+                assigned_user.email,
+                f"[Incident Assignment] {incident.incident_token}",
+                f"You have been assigned to incident {incident.incident_token}.\n\nDivision: {to_division.name}\nDepartment: {to_department.name if to_department else 'N/A'}\nPlease take appropriate action."
+            )
         return JsonResponse({"success": True, "message": "Reassignment successful."})
 
 
     else:
         form.save()
+        if incident.assigned_to and incident.assigned_to.email:
+            send_incident_notification_email(
+                incident.assigned_to.email,
+                f"[Incident Status Updated] {incident.incident_token}",
+                f"The status of incident {incident.incident_token} has been updated to '{updated_status.name}' by {request.user.fullname}."
+            )
         return JsonResponse({"success": True, "message": "Status updated successfully."})
 
 
@@ -748,3 +798,18 @@ def delete_question(request, pk):
     if request.method == 'POST':
         question.delete()
         return redirect('create_question')
+    
+
+
+def send_incident_notification_email(to_email, subject, message):
+    if to_email:
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[to_email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Failed to send email: {e}")
