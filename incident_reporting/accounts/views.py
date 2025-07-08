@@ -813,3 +813,11 @@ def send_incident_notification_email(to_email, subject, message):
             )
         except Exception as e:
             print(f"Failed to send email: {e}")
+
+
+
+@login_required
+@role_level_required(3)
+@audit_trail_decorator
+def get_my_profile(request):
+    return render(request,"profile.html")

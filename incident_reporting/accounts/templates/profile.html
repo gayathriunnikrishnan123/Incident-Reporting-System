@@ -1,0 +1,57 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% block title %}Profile - Dashboard{% endblock %}
+{% block page_title %}My profile{% endblock %}
+{% block headersPart %}
+<link rel="stylesheet" href="{% static "css/profile.css" %}">
+{% endblock headersPart %}
+
+{% block content %}
+
+
+<div class="content-section profile-card">
+    <div class="section-header profile-header">
+        <span>Personal Information</span>
+        <button class="edit-button">Edit ✎</button>
+    </div>
+    <div class="section-content profile-info">
+        <div class="profile-row">
+            <div class="profile-avatar">{{ request.user.fullname|slice:":1" }}{{ request.user.fullname|slice:"-1:" }}</div>
+            <div class="profile-name-details">
+                <h2>{{ request.user.fullname }}</h2>
+                <p>{{ request.user.email }}</p>
+            </div>
+        </div>
+
+        <div class="profile-grid">
+            <div class="profile-item">
+                <h4>Default Division</h4>
+                <p>{{ request.user.default_division.name|default:"NA" }}</p>
+            </div>
+            <div class="profile-item">
+                <h4>Default Department</h4>
+                <p>{{ request.user.default_department.name|default:"NA" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-section profile-card">
+    <div class="section-header profile-header">
+        <span>Roles in Divisions & Departments</span>
+    </div>
+    <div class="section-content">
+        <ul class="role-list">
+            {% for dp in request.user.departmentprofile_set.all %}
+                <li><strong>{{ dp.role.name }}</strong> — {{ dp.division.name }} / {{ dp.department.name }}</li>
+            {% empty %}
+                <li>No roles assigned.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+
+
+
+{% endblock content %}

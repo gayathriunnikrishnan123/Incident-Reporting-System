@@ -90,4 +90,10 @@ urlpatterns = [
     path('questions/<int:pk>/delete/', views.delete_question, name='delete-question'), 
 
 
+
+       # profile
+
+    path('profile/', views.get_my_profile, name='my-profile'),
+
+
 ]
