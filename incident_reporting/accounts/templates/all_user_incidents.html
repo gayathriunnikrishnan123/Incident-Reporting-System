@@ -72,18 +72,24 @@
 
 {% block extra_js %}
 
+
     <script>
         $(document).ready(function () {
             $('#userTable').DataTable({
                 responsive: true,
-                pageLength: 25,
-                lengthMenu: [3, 10, 25, 50],
+                pageLength: 10,
+                lengthMenu: [5, 10, 25, 50],
                 lengthChange: true,
                 searching: true,
-                ordering: true
+                ordering: true,
+                language: {
+                    search: "🔍  _INPUT_",
+                    searchPlaceholder: "Search incidents..."
+                }
             });
         });
     </script>
+
 
 
 {% endblock extra_js %}
