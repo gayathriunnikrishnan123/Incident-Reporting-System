@@ -1,47 +1,60 @@
 {% extends 'dashboard/base.html' %}
 
 {% block title %}Dashboard{% endblock %}
-{% block page_title %}Hey {{request.user.fullname}}{% endblock %}
+{% block page_title %}Hey {{ request.user.fullname }}{% endblock %}
 
 {% block content %}
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">👥</div>
-                        Total
-                    </div>
-                    <div class="stat-value">57</div>
-                    <div class="stat-change positive">...</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">💰</div>
-                        Total
-                    </div>
-                    <div class="stat-value">65</div>
-                    <div class="stat-change positive">...</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">📦</div>
-                        Total
-                    </div>
-                    <div class="stat-value">13</div>
-                    <div class="stat-change negative">...</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">↩️</div>
-                        Total
-                    </div>
-                    <div class="stat-value">89</div>
-                    <div class="stat-change positive">...</div>
-                </div>
-            </div>
-            <div class="content-section">
-                <div class="section-header">Recent Activity</div>
-                <div class="section-content">
-                    <p>....</p>
-                </div>
-            </div>
+<div class="stats-grid">
+
+    {% if role == 'Admin' %}
+        <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon">👥</div>Users</div>
+            <div class="stat-value">{{ metrics.total_users }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon">📄</div>Incidents</div>
+            <div class="stat-value">{{ metrics.total_incidents }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon">🏢</div>Departments</div>
+            <div class="stat-value">{{ metrics.total_departments }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon">🏛️</div>Divisions</div>
+            <div class="stat-value">{{ metrics.total_divisions }}</div>
+        </div>
+
+    {% elif role == 'Reviewer' %}
+        <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon">🏢</div>Departments</div>
+            <div class="stat-value">{{ metrics.total_departments }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon">📄</div>Incidents</div>
+            <div class="stat-value">{{ metrics.total_incidents }}</div>
+        </div>
+
+    {% elif role == 'Responder' %}
+        <div class="stat-card">
+            <div class="stat-header"><div class="stat-icon">📄</div>Incidents</div>
+            <div class="stat-value">{{ metrics.total_incidents }}</div>
+        </div>
+    {% endif %}
+
+    <!-- Notifications Card -->
+    <div class="stat-card">
+        <a href="{% url 'view_notifications' %}" style="text-decoration: none; color: inherit;">
+            <div class="stat-header"><div class="stat-icon">🔔</div>Notifications</div>
+            <div class="stat-value">{{ metrics.notifications.count }}</div>
+        </a>
+    </div>
+
+</div>
+
+<div class="content-section">
+    <div class="section-header">Recent Activity</div>
+    <div class="section-content">
+        <p>Coming soon: Latest incidents, updates, and more.</p>
+    </div>
+</div>
 {% endblock %}

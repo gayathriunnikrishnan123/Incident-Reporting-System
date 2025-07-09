@@ -30,7 +30,7 @@
         </div>
 
         <div class="user-profile" id="profileToggle">
-            <div class="user-avatar">SS</div>
+            <div class="user-avatar">{{ request.user.fullname|slice:":1" }}{{ request.user.fullname|slice:"-1:" }}</div>
             <div class="user-info">
                 <h4>{{ request.user.get_full_name|default:request.user.fullname }}</h4>
                 <p>{{ request.session.role_name}}</p>
@@ -38,7 +38,7 @@
         </div>
         
         <div class="profile-menu" id="profileMenu">
-            <a href="#" class="nav-item">👤 <span>Profile</span></a>
+            <a href="{% url 'my-profile' %}" class="nav-item">👤 <span>Profile</span></a>
             <a href="{% url 'password_change' %}" class="nav-item">🔑 <span>Change Password</span></a>
             <a href="{% url 'logout' %}" class="nav-item">🚪 <span>Logout</span></a>
         </div>

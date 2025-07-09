@@ -15,8 +15,9 @@ from masterdata.models import Department, Division
 from django.http import JsonResponse
 from incidents.models import Incident, IncidentStatus, IncidentTransferLog,IncidentQuestion, IncidentAnswer
 from incidents.forms import IncidentStatusUpdateForm,IncidentQuestionForm
-from django.core.mail import send_mail 
+from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Q
 
 # Create your views here.
 
@@ -60,24 +61,48 @@ ROLE_MENUS = {
 @audit_trail_decorator
 @role_level_required(3)
 def dashboardView(request):
-    loggedInUser=request.user
-    print(request.session)
-    if 'role_name' not in request.session:
+    loggedInUser = request.user
+    role = request.session.get('role_name', None)
+
+    # Fallback setup for first-time role detection
+    if not role:
         if loggedInUser.is_superuser:
             request.session['role_name'] = 'Admin'
             request.session['role_level'] = 1
         else:
-            depart = DepartmentProfile.objects.filter(user=loggedInUser,is_active=True,is_deleted=False,role__is_deleted=False).order_by('role__level').first()
+            depart = DepartmentProfile.objects.filter(user=loggedInUser, is_active=True, is_deleted=False, role__is_deleted=False).order_by('role__level').first()
             if depart:
                 request.session['role_name'] = depart.role.name
                 request.session['role_level'] = depart.role.level
-                request.session['role_id']=depart.role.pk
+                request.session['role_id'] = depart.role.pk
+        role = request.session.get('role_name', None)
 
-    role = request.session.get('role_name', None)
-    request.session['menus']=ROLE_MENUS.get(role,[])
-    print(request.session['role_level'])
+    # Store menus based on role
+    request.session['menus'] = ROLE_MENUS.get(role, [])
 
-    return render(request, "dashboard/dashboard.html")
+    # Dashboard metrics
+    metrics = {}
+    if role == "Admin":
+        metrics['total_users'] = CustomUserProfile.objects.filter(is_deleted=False).count()
+        metrics['total_incidents'] = Incident.objects.filter(is_deleted=False).count()
+        metrics['total_departments'] = Department.objects.filter(is_deleted=False).count()
+        metrics['total_divisions'] = Division.objects.filter(is_deleted=False).count()
+        metrics['notifications'] = Incident.objects.filter(status__name="Re Assigned", needs_admin_transfer=True, is_deleted=False)
+    
+    elif role == "Reviewer":
+        division_ids = DepartmentProfile.objects.filter(user=loggedInUser, role__name="Reviewer", is_deleted=False).values_list('division_id', flat=True)
+        metrics['total_departments'] = Department.objects.filter(division_id__in=division_ids, is_deleted=False).count()
+        metrics['total_incidents'] = Incident.objects.filter(division_id__in=division_ids, is_deleted=False).count()
+        metrics['notifications'] = Incident.objects.filter(status__name="Under Transfer", assigned_to=loggedInUser, is_deleted=False)
+
+    elif role == "Responder":
+        metrics['total_incidents'] = Incident.objects.filter(assigned_to=loggedInUser, is_deleted=False).count()
+        metrics['notifications'] = Incident.objects.filter(assigned_to=loggedInUser, is_deleted=False).exclude(status__name="Closed")
+
+    return render(request, "dashboard/dashboard.html", {
+        "metrics": metrics,
+        "role": role
+    })
 
 
 @login_required
@@ -498,7 +523,7 @@ def ajax_update_incident_status(request):
         )
 
         incident.status = updated_status
-        incident.department = None  # Important: clear department
+        incident.department = None  
         incident.is_under_transfer = True
         incident.needs_admin_transfer=False
 
@@ -516,30 +541,18 @@ def ajax_update_incident_status(request):
         if reviewer_profile:
             incident.assigned_to = reviewer_profile.user
 
-        # Notify the reviewers of the division
-        reviewers = DepartmentProfile.objects.filter(
-            division=to_division or incident.division,
-            role__name="Reviewer",
-            department__isnull=True,
-            is_active=True,
-            is_deleted=False
-        ).select_related('user')
-
-        reviewer_emails = [r.user.email for r in reviewers]
-
-        try:
-            send_mail(
-                subject=f"[Transfer Request] Incident {incident.incident_token}",
-                message=f"The responder has requested a transfer for incident {incident.incident_token}.\n\nReason: {reason or 'Not specified.'}\nDivision: {incident.division}",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=reviewer_emails,
-                fail_silently=False
-            )
-        except Exception as e:
-            print("Failed to notify reviewers about transfer request:", e)
-
 
         incident.save()
+
+        if reviewer_profile and reviewer_profile.user.email:
+            subject = f"Incident {incident.incident_token} is Under Transfer"
+            message = (
+                f"Incident {incident.incident_token} has been marked as 'Under Transfer' by {request.user.fullname}.\n\n"
+                f"Reason: {reason or 'No reason provided'}\n"
+                f"Please review and reassign it accordingly."
+            )
+            send_incident_notification_email(reviewer_profile.user.email, subject, message)
+
         return JsonResponse({"success": True, "message": "Transfer initiated successfully."})
 
 
@@ -571,10 +584,36 @@ def ajax_update_incident_status(request):
                 approved_by=None
             )
 
+            admin_profiles = DepartmentProfile.objects.filter(role__name="Admin",is_active=True,is_deleted=False).select_related("user")
+
+            for admin_profile in admin_profiles:
+                admin_user = admin_profile.user
+                if admin_user and admin_user.email:
+                    send_incident_notification_email(
+                        admin_user.email,
+                        f"[Admin Action Required] Incident {incident.incident_token} Escalated",
+                                    f"""
+                        Dear {admin_user.fullname},
+
+                        A cross-division reassignment request has been made by Reviewer: {request.user.get_full_name()}.
+
+                        Incident: {incident.incident_token}
+                        Current Division: {incident.division.name}
+                        Target Division: {to_division.name}
+                        Reason: {reason or 'No reason provided'}
+
+                        This incident requires your approval and reassignment.
+
+                        Regards,
+                        Incident Management System
+
+                        """)
+
+
             return JsonResponse({
-                "success": False,
-                "error": "Reviewer cannot reassign across divisions. Admin has been notified."
-            }, status=403)
+                "success": True,
+                "message": "Cross-division reassignment sent to Admin."
+            })
 
 
         to_department = None
@@ -617,20 +656,6 @@ def ajax_update_incident_status(request):
             initiated_by=request.user,
             approved_by=request.user
         )
-        admins = CustomUserProfile.objects.filter(is_superuser=True, is_active=True)
-        admin_emails = [admin.email for admin in admins]
-
-        try:
-            send_mail(
-                subject=f"[Escalation Alert] Incident {incident.incident_token}",
-                message=f"A reviewer has escalated incident {incident.incident_token} to another division.\n\nReason: {reason or 'Not specified.'}\nFrom: {incident.division}",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=admin_emails,
-                fail_silently=False
-            )
-        except Exception as e:
-            print("Failed to notify admin about escalation:", e)
-
 
         incident.division = to_division
         incident.department = to_department
@@ -639,30 +664,27 @@ def ajax_update_incident_status(request):
         incident.manually_assigned = True
         incident.assigned_to = assigned_user
 
-        # ✅ Send email to newly assigned person
-        if assigned_user and assigned_user.email:
-            try:
-                send_mail(
-                    subject=f"[Incident Reassigned] Token: {incident.incident_token}",
-                    message=f"You have been assigned a new incident.\n\nToken: {incident.incident_token}\nDivision: {incident.division}\nDepartment: {incident.department}",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[assigned_user.email],
-                    fail_silently=False
-                )
-            except Exception as e:
-                print("Failed to send reassignment email:", e)       
-                
-
-
         if role == "Admin":
             incident.needs_admin_transfer = False
 
         incident.save()
+        if assigned_user and assigned_user.email:
+            send_incident_notification_email(
+                assigned_user.email,
+                f"[Incident Assignment] {incident.incident_token}",
+                f"You have been assigned to incident {incident.incident_token}.\n\nDivision: {to_division.name}\nDepartment: {to_department.name if to_department else 'N/A'}\nPlease take appropriate action."
+            )
         return JsonResponse({"success": True, "message": "Reassignment successful."})
 
 
     else:
         form.save()
+        if incident.assigned_to and incident.assigned_to.email:
+            send_incident_notification_email(
+                incident.assigned_to.email,
+                f"[Incident Status Updated] {incident.incident_token}",
+                f"The status of incident {incident.incident_token} has been updated to '{updated_status.name}' by {request.user.fullname}."
+            )
         return JsonResponse({"success": True, "message": "Status updated successfully."})
 
 
@@ -801,3 +823,33 @@ def delete_question(request, pk):
     if request.method == 'POST':
         question.delete()
         return redirect('create_question')
+    
+
+
+def send_incident_notification_email(to_email, subject, message):
+    if to_email:
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[to_email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+
+
+
+@login_required
+@role_level_required(3)
+@audit_trail_decorator
+def get_my_profile(request):
+    return render(request,"profile.html")
+
+
+
+
+@login_required
+def view_notifications(request):
+    pass

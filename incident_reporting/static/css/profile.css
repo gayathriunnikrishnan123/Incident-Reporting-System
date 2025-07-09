@@ -1,0 +1,135 @@
+/* === Profile Page Styling === */
+
+.profile-card {
+    margin-bottom: 20px;
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.edit-button {
+    background-color: #f97316;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.edit-button:hover {
+    background-color: #ea580c;
+}
+
+.profile-info .profile-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.profile-avatar {
+    width: 60px;
+    height: 60px;
+    background: #10b981;
+    color: white;
+    font-weight: 500;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.profile-name-details h2 {
+    margin-bottom: 4px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.profile-name-details p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.profile-item h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.profile-item p {
+    color: #374151;
+    font-size: 14px;
+}
+
+.role-list {
+    list-style: none;
+    padding-left: 0;
+    font-size: 14px;
+    color: #374151;
+}
+
+.role-list li {
+    margin-bottom: 8px;
+}
+
+/* === Responsive === */
+
+@media (max-width: 768px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .profile-name-details h2 {
+        font-size: 16px;
+    }
+
+    .edit-button {
+        align-self: flex-end;
+        padding: 6px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .profile-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 16px;
+    }
+
+    .profile-name-details h2 {
+        font-size: 15px;
+    }
+
+    .profile-name-details p {
+        font-size: 13px;
+    }
+}
