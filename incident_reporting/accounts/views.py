@@ -56,7 +56,6 @@ ROLE_MENUS = {
 }
 
 
-
 @login_required
 @audit_trail_decorator
 @role_level_required(3)
@@ -70,7 +69,12 @@ def dashboardView(request):
             request.session['role_name'] = 'Admin'
             request.session['role_level'] = 1
         else:
-            depart = DepartmentProfile.objects.filter(user=loggedInUser, is_active=True, is_deleted=False, role__is_deleted=False).order_by('role__level').first()
+            depart = DepartmentProfile.objects.filter(
+                user=loggedInUser, 
+                is_active=True, 
+                is_deleted=False, 
+                role__is_deleted=False
+            ).order_by('role__level').first()
             if depart:
                 request.session['role_name'] = depart.role.name
                 request.session['role_level'] = depart.role.level
@@ -99,10 +103,53 @@ def dashboardView(request):
         metrics['total_incidents'] = Incident.objects.filter(assigned_to=loggedInUser, is_deleted=False).count()
         metrics['notifications'] = Incident.objects.filter(assigned_to=loggedInUser, is_deleted=False).exclude(status__name="Closed")
 
-    return render(request, "dashboard/dashboard.html", {
+    # Chart data: division-wise incident status counts
+    divisions = Division.objects.filter(is_deleted=False)
+    statuses = ['New', 'Under Review', 'Assigned', 'Resolved', 'Completed']
+    chart_divisions = [d.name for d in divisions]
+
+    status_data = {status: [0] * len(chart_divisions) for status in statuses}
+
+    for idx, division in enumerate(divisions):
+        for status in statuses:
+            count = Incident.objects.filter(
+                division=division,
+                status__name=status,
+                is_deleted=False
+            ).count()
+            status_data[status][idx] = count
+
+    color_map = {
+        'New': 'rgba(255, 99, 132, 0.7)',
+        'Under Review': 'rgba(255, 159, 64, 0.7)',
+        'Assigned': 'rgba(255, 205, 86, 0.7)',
+        'Resolved': 'rgba(75, 192, 192, 0.7)',
+        'Completed': 'rgba(54, 162, 235, 0.7)',
+    }
+
+    datasets = [
+        {
+            'label': status,
+            'data': status_data[status],
+            'backgroundColor': color_map[status],
+            'stack': 'status'
+        }
+        for status in statuses
+    ]
+
+    chart_data = {
+        "divisions": chart_divisions,
+        "datasets": datasets
+    }
+
+    context = {
         "metrics": metrics,
-        "role": role
-    })
+        "role": role,
+        "chart_data": chart_data
+    }
+
+    return render(request, "dashboard/dashboard.html", context)
+
 
 
 @login_required

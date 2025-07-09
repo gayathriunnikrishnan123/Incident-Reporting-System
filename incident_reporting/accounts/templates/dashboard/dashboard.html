@@ -51,10 +51,49 @@
 
 </div>
 
-<div class="content-section">
-    <div class="section-header">Recent Activity</div>
-    <div class="section-content">
-        <p>Coming soon: Latest incidents, updates, and more.</p>
-    </div>
+<!-- Division-wise Incident Status Chart -->
+<div class="chart-section" style="margin-top: 40px;">
+    <h3 style="font-weight: bold;">Division-wise Incident Status</h3>
+    <canvas id="divisionChart" style="width: 100%; max-width: 1000px;"></canvas>
 </div>
+
+<script>
+    const divisionLabels = {{ chart_data.divisions|safe }};
+    const datasets = {{ chart_data.datasets|safe }};
+
+    new Chart(document.getElementById('divisionChart'), {
+        type: 'bar',
+        data: {
+            labels: divisionLabels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Division-wise Incident Breakdown'
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Divisions'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Incidents'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
 {% endblock %}
