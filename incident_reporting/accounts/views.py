@@ -54,8 +54,6 @@ ROLE_MENUS = {
         {'name': 'All Incidents', 'url': 'all-incidents', 'icon': '📦'},
     ],
 }
-
-
 @login_required
 @audit_trail_decorator
 @role_level_required(3)
@@ -70,9 +68,9 @@ def dashboardView(request):
             request.session['role_level'] = 1
         else:
             depart = DepartmentProfile.objects.filter(
-                user=loggedInUser, 
-                is_active=True, 
-                is_deleted=False, 
+                user=loggedInUser,
+                is_active=True,
+                is_deleted=False,
                 role__is_deleted=False
             ).order_by('role__level').first()
             if depart:
@@ -84,27 +82,74 @@ def dashboardView(request):
     # Store menus based on role
     request.session['menus'] = ROLE_MENUS.get(role, [])
 
-    # Dashboard metrics
+    # Prepare dashboard metrics based on role
     metrics = {}
+
     if role == "Admin":
         metrics['total_users'] = CustomUserProfile.objects.filter(is_deleted=False).count()
         metrics['total_incidents'] = Incident.objects.filter(is_deleted=False).count()
         metrics['total_departments'] = Department.objects.filter(is_deleted=False).count()
         metrics['total_divisions'] = Division.objects.filter(is_deleted=False).count()
-        metrics['notifications'] = Incident.objects.filter(status__name="Re Assigned", needs_admin_transfer=True, is_deleted=False)
-    
+        metrics['notifications'] = Incident.objects.filter(
+            status__name="Re Assigned", needs_admin_transfer=True, is_deleted=False
+        )
+
+        # Admin sees all divisions for chart
+        divisions = Division.objects.filter(is_deleted=False)
+
     elif role == "Reviewer":
-        division_ids = DepartmentProfile.objects.filter(user=loggedInUser, role__name="Reviewer", is_deleted=False).values_list('division_id', flat=True)
-        metrics['total_departments'] = Department.objects.filter(division_id__in=division_ids, is_deleted=False).count()
-        metrics['total_incidents'] = Incident.objects.filter(division_id__in=division_ids, is_deleted=False).count()
-        metrics['notifications'] = Incident.objects.filter(status__name="Under Transfer", assigned_to=loggedInUser, is_deleted=False)
+        # Get divisions assigned to Reviewer via DepartmentProfile
+        division_ids = DepartmentProfile.objects.filter(
+            user=loggedInUser,
+            role__name="Reviewer",
+            is_deleted=False
+        ).values_list('division_id', flat=True).distinct()
+
+        metrics['total_departments'] = Department.objects.filter(
+            division_id__in=division_ids, is_deleted=False
+        ).count()
+
+        metrics['total_incidents'] = Incident.objects.filter(
+            division_id__in=division_ids, is_deleted=False
+        ).count()
+
+        metrics['notifications'] = Incident.objects.filter(
+            status__name="Under Transfer", assigned_to=loggedInUser, is_deleted=False
+        )
+
+        divisions = Division.objects.filter(id__in=division_ids, is_deleted=False)
 
     elif role == "Responder":
-        metrics['total_incidents'] = Incident.objects.filter(assigned_to=loggedInUser, is_deleted=False).count()
-        metrics['notifications'] = Incident.objects.filter(assigned_to=loggedInUser, is_deleted=False).exclude(status__name="Closed")
+        # Get responder's department(s) only
+        department_ids = DepartmentProfile.objects.filter(
+            user=loggedInUser,
+            role__name="Responder",
+            is_deleted=False
+        ).values_list('department_id', flat=True).distinct()
 
-    # Chart data: division-wise incident status counts
-    divisions = Division.objects.filter(is_deleted=False)
+        # Responder's total incidents in their department(s)
+        metrics['total_incidents'] = Incident.objects.filter(
+            department_id__in=department_ids,
+            is_deleted=False
+        ).count()
+
+        # Notifications for responder excluding closed incidents
+        metrics['notifications'] = Incident.objects.filter(
+            assigned_to=loggedInUser,
+            is_deleted=False
+        ).exclude(status__name="Closed")
+
+        # For chart, get distinct divisions linked to responder's departments
+        division_ids = Department.objects.filter(id__in=department_ids, is_deleted=False).values_list('division_id', flat=True).distinct()
+        divisions = Division.objects.filter(id__in=division_ids, is_deleted=False)
+
+    else:
+        # Default empty data for unknown roles
+        metrics['total_incidents'] = 0
+        metrics['notifications'] = Incident.objects.none()
+        divisions = Division.objects.none()
+
+    # Prepare chart data: division-wise incident status counts
     statuses = ['New', 'Under Review', 'Assigned', 'Resolved', 'Completed']
     chart_divisions = [d.name for d in divisions]
 
@@ -119,6 +164,7 @@ def dashboardView(request):
             ).count()
             status_data[status][idx] = count
 
+    # Chart colors per status
     color_map = {
         'New': 'rgba(255, 99, 132, 0.7)',
         'Under Review': 'rgba(255, 159, 64, 0.7)',
