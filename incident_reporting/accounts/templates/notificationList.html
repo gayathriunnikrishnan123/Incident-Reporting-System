@@ -1,0 +1,31 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% block title %}All Notifications - Dashboard{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block headersPart %}
+  <link rel="stylesheet" href="{% static "css/notifications.css" %}">
+{% endblock headersPart %}
+
+{% block content %}
+<div class="notification-page-container">
+    {% if notifications %}
+        {% for notif in notifications %}
+            <a href="{% url 'open_notification' notif.id %}"
+               class="notification-card {% if notif.is_read %}read{% else %}unread{% endif %}">
+                <div class="notification-content">
+                    <div class="notification-header">
+                        {% if not notif.is_read %}
+                            <span class="unread-dot"></span>
+                        {% endif %}
+                        <p class="message">{{ notif.message }}</p>
+                    </div>
+                    <p class="timestamp">{{ notif.created_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </a>
+        {% endfor %}
+    {% else %}
+        <div class="no-notifications">You have no notifications.</div>
+    {% endif %}
+</div>
+{% endblock %}

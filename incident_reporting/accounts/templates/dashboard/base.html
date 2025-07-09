@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Dashboard{% endblock %}</title>
     <link rel="stylesheet" href="{% static "css/dashBase.css" %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
     {% block headersPart %}{% endblock headersPart %}
      <style>
         {% block extra_css %}{% endblock %}
@@ -16,7 +18,7 @@
 <body>
     
 <div class="dashboard-container">
-    <!-- Sidebar Toggle Button (moved outside sidebar) -->
+
     
 
     <!-- Sidebar -->
@@ -120,7 +122,16 @@
             <button class="mobile-sidebar-toggle" onclick="toggleMobileSidebar()">☰</button>
             <h1>{% block page_title %}Dashboard{% endblock %}</h1>
             <div class="header-actions">
-                <span class="time-period">{% block time_period %}{% now "M d, Y" %}{% endblock %}</span>
+                <div class="notification-wrapper">
+                    <a href="{% url 'notification_list' %}" class="notification-icon">
+                        <i class="fa fa-bell"></i>
+                        {% if request.session.count > 0 %}
+                            <span class="notification-badge">{{ request.session.count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+
+                {% comment %} <span class="time-period">{% block time_period %}{% now "M d, Y" %}{% endblock %}</span> {% endcomment %}
                 {% block header_actions %}{% endblock %}
             </div>
         </header>
@@ -223,6 +234,7 @@
             profileMenu.style.display = profileMenu.style.display === 'flex' ? 'none' : 'flex';
         });
     </script>
+
 
 
 

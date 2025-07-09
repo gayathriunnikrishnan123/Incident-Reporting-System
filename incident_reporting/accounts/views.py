@@ -13,11 +13,11 @@ from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
 from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department, Division
 from django.http import JsonResponse
-from incidents.models import Incident, IncidentStatus, IncidentTransferLog,IncidentQuestion, IncidentAnswer
+from incidents.models import Incident, IncidentStatus, IncidentTransferLog,IncidentQuestion, IncidentAnswer, Notification
 from incidents.forms import IncidentStatusUpdateForm,IncidentQuestionForm
 from django.core.mail import send_mail
 from django.conf import settings
-
+from django.urls import reverse, NoReverseMatch
 # Create your views here.
 
 
@@ -72,9 +72,10 @@ def dashboardView(request):
                 request.session['role_name'] = depart.role.name
                 request.session['role_level'] = depart.role.level
                 request.session['role_id']=depart.role.pk
-
+    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
     role = request.session.get('role_name', None)
     request.session['menus']=ROLE_MENUS.get(role,[])
+    request.session['count']=unread_count
     print(request.session['role_level'])
 
     return render(request, "dashboard/dashboard.html")
@@ -528,6 +529,14 @@ def ajax_update_incident_status(request):
             )
             send_incident_notification_email(reviewer_profile.user.email, subject, message)
 
+            Notification.objects.create(
+                recipient=reviewer_profile.user,
+                message=f"You have been assigned to incident {incident.incident_token}.",
+                incident=incident,
+                redirect_url=f"get-incident-by-token"
+            )
+        
+
         return JsonResponse({"success": True, "message": "Transfer initiated successfully."})
 
 
@@ -570,7 +579,7 @@ def ajax_update_incident_status(request):
                                     f"""
                         Dear {admin_user.fullname},
 
-                        A cross-division reassignment request has been made by Reviewer: {request.user.get_full_name()}.
+                        A cross-division reassignment request has been made by Reviewer: {request.user.fullname}.
 
                         Incident: {incident.incident_token}
                         Current Division: {incident.division.name}
@@ -583,6 +592,12 @@ def ajax_update_incident_status(request):
                         Incident Management System
 
                         """)
+                    Notification.objects.create(
+                        recipient=admin_user,
+                        message=f"Incident {incident.incident_token} requires your approval for cross-division reassignment.",
+                        incident=incident,
+                        redirect_url=f"get-incident-by-token"
+                    )
 
 
             return JsonResponse({
@@ -649,6 +664,12 @@ def ajax_update_incident_status(request):
                 f"[Incident Assignment] {incident.incident_token}",
                 f"You have been assigned to incident {incident.incident_token}.\n\nDivision: {to_division.name}\nDepartment: {to_department.name if to_department else 'N/A'}\nPlease take appropriate action."
             )
+            Notification.objects.create(
+                recipient=assigned_user,
+                message=f"You have been assigned to incident {incident.incident_token}.\n\nDivision: {to_division.name}\nDepartment: {to_department.name if to_department else 'N/A'}\n \t Please take appropriate action.",
+                incident=incident,
+                redirect_url=f"get-incident-by-token"
+            )
         return JsonResponse({"success": True, "message": "Reassignment successful."})
 
 
@@ -660,11 +681,40 @@ def ajax_update_incident_status(request):
                 f"[Incident Status Updated] {incident.incident_token}",
                 f"The status of incident {incident.incident_token} has been updated to '{updated_status.name}' by {request.user.fullname}."
             )
+            Notification.objects.create(
+                recipient=incident.assigned_to,
+                message=f"The status of incident {incident.incident_token} has been updated to '{updated_status.name}' by {request.user.fullname}.",
+                incident=incident,
+                redirect_url=f"get-incident-by-token"
+            )
         return JsonResponse({"success": True, "message": "Status updated successfully."})
 
 
 
 
+
+@login_required
+@role_level_required(3)
+@audit_trail_decorator
+def notification_list_view(request):
+    notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    return render(request, 'notificationList.html', {'notifications': notifications})
+
+@login_required
+def open_notification(request, notif_id):
+    notif = get_object_or_404(Notification, id=notif_id, recipient=request.user)
+    notif.is_read = True
+    notif.save()
+
+    try:
+        if notif.redirect_url == "get-incident-by-token" and notif.incident:
+            redirect_to = reverse("get-incident-by-token", kwargs={"token": notif.incident.incident_token})
+        else:
+            redirect_to = reverse("notification_list")  
+    except NoReverseMatch:
+        redirect_to = reverse("notification_list")
+
+    return redirect(redirect_to)
 
 
 

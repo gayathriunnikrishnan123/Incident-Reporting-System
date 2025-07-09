@@ -95,5 +95,12 @@ urlpatterns = [
 
     path('profile/', views.get_my_profile, name='my-profile'),
 
+   #  notifications
+
+    path('notifications/', views.notification_list_view, name='notification_list'),
+
+    path('notifications/open/<int:notif_id>/', views.open_notification, name='open_notification')
+
+
 
 ]

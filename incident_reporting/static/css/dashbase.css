@@ -575,6 +575,62 @@ body.dark-mode .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
 
 
 
+/* for not */
+
+
+.notification-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-left: 1rem;
+}
+
+.notification-icon {
+    position: relative;
+    font-size: 1.9rem;
+    color: #333;
+    text-decoration: none;
+}
+
+.notification-icon .fa-bell {
+    font-size: 2rem;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    font-size: 0.60rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 12px;
+    box-shadow: 0 0 0 2px white; /* makes it pop on dark bg */
+    animation: pulse 2s ease infinite;
+}
+
+.notification-icon .fa-bell {
+    color: rgb(0, 217, 255);
+}
+
+/* Dark mode override */
+body.dark-mode .notification-icon .fa-bell {
+    color: aqua;
+    text-shadow: 0 0 1px white, 0 0 2px white;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 
 
 

@@ -1,5 +1,5 @@
 from django.shortcuts import render,get_object_or_404, redirect
-from incidents.models import Incident, IncidentAttachment,IncidentQuestion, IncidentAnswer
+from incidents.models import Incident, IncidentAttachment,IncidentQuestion, IncidentAnswer, Notification
 from incidents.forms import IncidentForm,IncidentQuestionForm
 from masterdata.models import IncidentSeverity, IncidentStatus
 from accounts.models import CustomUserProfile, DepartmentProfile
@@ -89,6 +89,12 @@ def submit_incident(request):
 
             incident.assigned_to = assigned_user
             incident.save()
+            Notification.objects.create(
+                recipient=assigned_user,
+                message=f"You have been assigned to a new Incident {incident.incident_token}",
+                incident=incident,
+                redirect_url=f"get-incident-by-token"
+            )
 
             files = request.FILES.getlist('file')
             for f in files:
