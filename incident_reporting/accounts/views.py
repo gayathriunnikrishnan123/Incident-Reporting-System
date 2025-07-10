@@ -18,6 +18,7 @@ from incidents.forms import IncidentStatusUpdateForm,IncidentQuestionForm
 from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse, NoReverseMatch
+
 # Create your views here.
 
 
@@ -78,7 +79,162 @@ def dashboardView(request):
     request.session['count']=unread_count
     print(request.session['role_level'])
 
-    return render(request, "dashboard/dashboard.html")
+    from collections import defaultdict
+
+def dashboardView(request):
+    loggedInUser = request.user
+
+    # Session role setup
+    if 'role_name' not in request.session:
+        if loggedInUser.is_superuser:
+            request.session['role_name'] = 'Admin'
+            request.session['role_level'] = 1
+        else:
+            depart = DepartmentProfile.objects.filter(
+                user=loggedInUser,
+                is_active=True, is_deleted=False,
+                role__is_deleted=False
+            ).order_by('role__level').first()
+            if depart:
+                request.session['role_name'] = depart.role.name
+                request.session['role_level'] = depart.role.level
+                request.session['role_id'] = depart.role.pk
+
+    role = request.session.get('role_name')
+    request.session['menus'] = ROLE_MENUS.get(role, [])
+    request.session['count'] = Notification.objects.filter(recipient=loggedInUser, is_read=False).count()
+
+    metrics = {}
+    statuses = ['New', 'Assigned', 'In Progress', 'Under Transfer', 'Re Assigned', 'Completed', 'Closed']
+    color_map = {
+        'New': 'rgba(255, 99, 132, 0.7)',
+        'Assigned': 'rgba(255, 205, 86, 0.7)',
+        'In Progress': 'rgba(153, 102, 255, 0.7)',
+        'Under Transfer': 'rgba(255, 159, 64, 0.7)',
+        'Re Assigned': 'rgba(255, 140, 203, 0.7)',
+        'Completed': 'rgba(54, 162, 235, 0.7)',
+        'Closed': 'rgba(75, 192, 192, 0.7)',
+    }
+    summary_data = {status: 0 for status in statuses}
+    chart_cards = []
+
+    assigned_to_user = Incident.objects.filter(assigned_to=loggedInUser, is_deleted=False)
+    user_dept_ids = assigned_to_user.exclude(department=None).values_list('department_id', flat=True)
+
+    if role == "Admin":
+        all_incidents = Incident.objects.filter(is_deleted=False)
+        all_departments = Department.objects.filter(is_deleted=False)
+        all_dept_ids = set(all_departments.values_list('id', flat=True)) | set(user_dept_ids)
+        departments = Department.objects.filter(id__in=all_dept_ids)
+
+        metrics.update({
+            'total_users': CustomUserProfile.objects.filter(is_deleted=False).count(),
+            'total_incidents': all_incidents.count(),
+            'total_departments': len(all_dept_ids),
+            'total_divisions': Division.objects.filter(is_deleted=False).count(),
+            'notifications': Incident.objects.filter(
+                status__name="Re Assigned",
+                needs_admin_transfer=True,
+                is_deleted=False
+            )
+        })
+
+    elif role == "Reviewer":
+        division_ids = DepartmentProfile.objects.filter(
+            user=loggedInUser, role__name="Reviewer", is_deleted=False
+        ).values_list('division_id', flat=True).distinct()
+
+        dept_under_div = Department.objects.filter(division_id__in=division_ids, is_deleted=False)
+        dept_ids = set(dept_under_div.values_list('id', flat=True)) | set(user_dept_ids)
+        departments = Department.objects.filter(id__in=dept_ids)
+
+        metrics.update({
+            'total_departments': len(dept_ids),
+            'total_incidents': Incident.objects.filter(department_id__in=dept_ids, is_deleted=False).count(),
+            'notifications': Incident.objects.filter(status__name="Under Transfer", assigned_to=loggedInUser, is_deleted=False)
+        })
+
+    elif role == "Responder":
+        dept_ids = set(user_dept_ids)
+        departments = Department.objects.filter(id__in=dept_ids, is_deleted=False)
+
+        metrics.update({
+            'total_incidents': assigned_to_user.count(),
+            'notifications': assigned_to_user.exclude(status__name="Closed")
+        })
+
+    else:
+        departments = Department.objects.none()
+        metrics['total_incidents'] = 0
+        metrics['notifications'] = Incident.objects.none()
+
+    for dept in departments:
+        labels = [dept.name]
+        status_data = {status: [] for status in statuses}
+
+        for status in statuses:
+
+            user_ids_in_dept = assigned_to_user.filter(department=dept).values_list('id', flat=True)
+            dept_count = Incident.objects.filter(department=dept, status__name=status, is_deleted=False).exclude(id__in=user_ids_in_dept).count()
+            user_count = assigned_to_user.filter(department=dept, status__name=status).count()
+            total = dept_count + user_count
+
+            status_data[status].append(total)
+            summary_data[status] += total
+
+        chart_cards.append({
+            'title': f"📊 {dept.name}",
+            'labels': labels,
+            'datasets': [
+                {
+                    'label': status,
+                    'data': status_data[status],
+                    'backgroundColor': color_map[status],
+                    'stack': 'status'
+                } for status in statuses
+            ]
+        })
+
+
+    orphan_incidents = assigned_to_user.filter(department=None)
+    if orphan_incidents.exists():
+        labels = ['Assigned (No Dept)']
+        status_data = {status: [] for status in statuses}
+        for status in statuses:
+            count = orphan_incidents.filter(status__name=status).count()
+            status_data[status].append(count)
+            summary_data[status] += count
+
+        chart_cards.append({
+            'title': "📊 Assigned to Me (No Department)",
+            'labels': labels,
+            'datasets': [
+                {
+                    'label': status,
+                    'data': status_data[status],
+                    'backgroundColor': color_map[status],
+                    'stack': 'status'
+                } for status in statuses
+            ]
+        })
+
+    status_summary = {
+        'labels': list(summary_data.keys()),
+        'data': list(summary_data.values()),
+        'colors': [color_map[status] for status in summary_data]
+    }
+
+    context = {
+        "metrics": metrics,
+        "role": role,
+        "chart_cards": chart_cards,
+        "status_summary": status_summary
+    }
+
+    return render(request, "dashboard/dashboard.html", context)
+
+
+
 
 
 @login_required

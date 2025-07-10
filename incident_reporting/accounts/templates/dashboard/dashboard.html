@@ -1,47 +1,170 @@
 {% extends 'dashboard/base.html' %}
-
+{% load static %}
 {% block title %}Dashboard{% endblock %}
 {% block page_title %}Hey {{request.user.fullname}}{% endblock %}
-
-{% block content %}
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">👥</div>
-                        Total
-                    </div>
-                    <div class="stat-value">57</div>
-                    <div class="stat-change positive">...</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">💰</div>
-                        Total
-                    </div>
-                    <div class="stat-value">65</div>
-                    <div class="stat-change positive">...</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">📦</div>
-                        Total
-                    </div>
-                    <div class="stat-value">13</div>
-                    <div class="stat-change negative">...</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">↩️</div>
-                        Total
-                    </div>
-                    <div class="stat-value">89</div>
-                    <div class="stat-change positive">...</div>
-                </div>
-            </div>
-            <div class="content-section">
-                <div class="section-header">Recent Activity</div>
-                <div class="section-content">
-                    <p>....</p>
-                </div>
-            </div>
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/dashBasecss' %}">
 {% endblock %}
+{% block content %}
+    <div class="stats-grid">
+        {% if role == 'Admin' %}
+            <div class="stat-card">
+                <div class="stat-header"><div class="stat-icon">👥</div>Users</div>
+                <div class="stat-value">{{ metrics.total_users }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header"><div class="stat-icon">📄</div>Incidents</div>
+                <div class="stat-value">{{ metrics.total_incidents }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header"><div class="stat-icon">🏢</div>Departments</div>
+                <div class="stat-value">{{ metrics.total_departments }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header"><div class="stat-icon">🏛️</div>Divisions</div>
+                <div class="stat-value">{{ metrics.total_divisions }}</div>
+            </div>
+
+        {% elif role == 'Reviewer' %}
+            <div class="stat-card">
+                <div class="stat-header"><div class="stat-icon">🏢</div>Departments</div>
+                <div class="stat-value">{{ metrics.total_departments }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header"><div class="stat-icon">📄</div>Incidents</div>
+                <div class="stat-value">{{ metrics.total_incidents }}</div>
+            </div>
+
+        {% elif role == 'Responder' %}
+            <div class="stat-card">
+                <div class="stat-header"><div class="stat-icon">📄</div>Incidents</div>
+                <div class="stat-value">{{ metrics.total_incidents }}</div>
+            </div>
+        {% endif %}
+
+    </div>
+
+    {% comment %} <div class="content-section">
+        <div class="section-header">Recent Activity</div>
+        <div class="section-content">
+            <p>Coming soon: Latest incidents, updates, and more.</p>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="section-header">Division-wise Incident Status</div>
+        <!-- Division-wise Incident Status Chart -->
+        <div class="chart-section" style="margin-top: 40px;">
+            <canvas id="divisionChart" style="width: 100%; max-width: 1000px;"></canvas>
+        </div>
+    </div> {% endcomment %}
+
+    <div class="chart-section">
+        {% for card in chart_cards %}
+        <div class="chart-card">
+            <h4>{{ card.title }}</h4>
+            <canvas id="chart{{ forloop.counter }}"></canvas>
+        </div>
+        {% endfor %}
+
+        <div class="chart-card">
+            <h4>🌀 Status Summary</h4>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+
+
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const divisionLabels = {{ chart_data.divisions|safe }};
+  const divisionDatasets = {{ chart_data.datasets|safe }};
+  const statusSummary = {{ chart_data.status_summary|safe }};
+
+  const divisionChart = new Chart(document.getElementById('divisionChart'), {
+    type: 'bar',
+    data: {
+      labels: divisionLabels,
+      datasets: divisionDatasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { stacked: true },
+        y: {
+          stacked: true,
+          beginAtZero: true,
+          ticks: { precision: 0 }
+        }
+      }
+    }
+  });
+
+  const statusChart = new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: statusSummary.labels,
+      datasets: [{
+        data: statusSummary.data,
+        backgroundColor: statusSummary.colors
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+</script>
+<script>
+  const chartCards = {{ chart_cards|safe }};
+  const statusSummary = {{ status_summary|safe }};
+
+  chartCards.forEach((card, index) => {
+    new Chart(document.getElementById('chart' + (index + 1)), {
+      type: 'bar',
+      data: {
+        labels: card.labels,
+        datasets: card.datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }
+        }
+      }
+    });
+  });
+
+  new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+      labels: statusSummary.labels,
+      datasets: [{
+        data: statusSummary.data,
+        backgroundColor: statusSummary.colors
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+</script>
+
+
+
+
+{% endblock extra_js %}
