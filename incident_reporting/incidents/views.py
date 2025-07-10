@@ -1,5 +1,5 @@
 from django.shortcuts import render,get_object_or_404, redirect
-from incidents.models import Incident, IncidentAttachment,IncidentQuestion, IncidentAnswer
+from incidents.models import Incident, IncidentAttachment,IncidentQuestion, IncidentAnswer, Notification
 from incidents.forms import IncidentForm,IncidentQuestionForm
 from masterdata.models import IncidentSeverity, IncidentStatus
 from accounts.models import CustomUserProfile, DepartmentProfile
@@ -89,6 +89,12 @@ def submit_incident(request):
 
             incident.assigned_to = assigned_user
             incident.save()
+            Notification.objects.create(
+                recipient=assigned_user,
+                message=f"You have been assigned to a new Incident {incident.incident_token}",
+                incident=incident,
+                redirect_url=f"get-incident-by-token"
+            )
 
             files = request.FILES.getlist('file')
             for f in files:
@@ -105,55 +111,7 @@ def submit_incident(request):
                     )
                 except Exception as e:
                     print("Failed to send email:", e)
-            subject = f"[New Incident Submitted] Token: {incident.incident_token}"
-            message = f"A new incident has been submitted.\n\nTitle: {incident.title}\nDivision: {incident.division}\nDepartment: {incident.department}\nToken: {incident.incident_token}"
-
-            notification_recipients = []   
-
-# 1. Assigned Responder
-            if incident.department:
-                responder_profiles = DepartmentProfile.objects.filter(
-                    department=incident.department,
-                    role__name="Responder",
-                    is_active=True,
-                    is_deleted=False
-                ).select_related('user')
-
-                notification_recipients += [responder.user.email for responder in responder_profiles]
-
-
-# 2. Assigned Reviewer (if no responder)
-            if not notification_recipients and incident.division:
-                reviewer_profiles = DepartmentProfile.objects.filter(
-                    division=incident.division,
-                    department__isnull=True,
-                    role__name="Reviewer",
-                    is_active=True,
-                    is_deleted=False
-                ).select_related('user')
-
-                notification_recipients += [reviewer.user.email for reviewer in reviewer_profiles]
-# 3. Admin (fallback)
-            if not notification_recipients:
-                admin_profiles = CustomUserProfile.objects.filter(
-                    is_superuser=True,
-                    is_active=True
-                )
-                notification_recipients += [admin.email for admin in admin_profiles]
-
-            try:
-                send_mail(
-                    subject,
-                    message,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=notification_recipients,
-                    fail_silently=False
-                )
-            except Exception as e:
-                print("Failed to send email to team:", e)
-
-
-
+                    
             for key, value in request.POST.items():
                 if key.startswith('question_'):
                     question_id = key.split('_')[1]

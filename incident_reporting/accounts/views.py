@@ -13,11 +13,11 @@ from accounts.models import CustomUserProfile, Role, AuditLog, DepartmentProfile
 from accounts.decorators import audit_trail_decorator, role_level_required
 from masterdata.models import Department, Division
 from django.http import JsonResponse
-from incidents.models import Incident, IncidentStatus, IncidentTransferLog,IncidentQuestion, IncidentAnswer
+from incidents.models import Incident, IncidentStatus, IncidentTransferLog,IncidentQuestion, IncidentAnswer, Notification
 from incidents.forms import IncidentStatusUpdateForm,IncidentQuestionForm
 from django.core.mail import send_mail
 from django.conf import settings
-from django.db.models import Q
+from django.urls import reverse, NoReverseMatch
 
 # Create your views here.
 
@@ -54,147 +54,186 @@ ROLE_MENUS = {
         {'name': 'All Incidents', 'url': 'all-incidents', 'icon': '📦'},
     ],
 }
+
+
+
 @login_required
 @audit_trail_decorator
 @role_level_required(3)
 def dashboardView(request):
-    loggedInUser = request.user
+    loggedInUser=request.user
+    print(request.session)
+    if 'role_name' not in request.session:
+        if loggedInUser.is_superuser:
+            request.session['role_name'] = 'Admin'
+            request.session['role_level'] = 1
+        else:
+            depart = DepartmentProfile.objects.filter(user=loggedInUser,is_active=True,is_deleted=False,role__is_deleted=False).order_by('role__level').first()
+            if depart:
+                request.session['role_name'] = depart.role.name
+                request.session['role_level'] = depart.role.level
+                request.session['role_id']=depart.role.pk
+    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
     role = request.session.get('role_name', None)
+    request.session['menus']=ROLE_MENUS.get(role,[])
+    request.session['count']=unread_count
+    print(request.session['role_level'])
 
-    # Fallback setup for first-time role detection
-    if not role:
+    from collections import defaultdict
+
+def dashboardView(request):
+    loggedInUser = request.user
+
+    # Session role setup
+    if 'role_name' not in request.session:
         if loggedInUser.is_superuser:
             request.session['role_name'] = 'Admin'
             request.session['role_level'] = 1
         else:
             depart = DepartmentProfile.objects.filter(
                 user=loggedInUser,
-                is_active=True,
-                is_deleted=False,
+                is_active=True, is_deleted=False,
                 role__is_deleted=False
             ).order_by('role__level').first()
             if depart:
                 request.session['role_name'] = depart.role.name
                 request.session['role_level'] = depart.role.level
                 request.session['role_id'] = depart.role.pk
-        role = request.session.get('role_name', None)
 
-    # Store menus based on role
+    role = request.session.get('role_name')
     request.session['menus'] = ROLE_MENUS.get(role, [])
+    request.session['count'] = Notification.objects.filter(recipient=loggedInUser, is_read=False).count()
 
-    # Prepare dashboard metrics based on role
     metrics = {}
-
-    if role == "Admin":
-        metrics['total_users'] = CustomUserProfile.objects.filter(is_deleted=False).count()
-        metrics['total_incidents'] = Incident.objects.filter(is_deleted=False).count()
-        metrics['total_departments'] = Department.objects.filter(is_deleted=False).count()
-        metrics['total_divisions'] = Division.objects.filter(is_deleted=False).count()
-        metrics['notifications'] = Incident.objects.filter(
-            status__name="Re Assigned", needs_admin_transfer=True, is_deleted=False
-        )
-
-        # Admin sees all divisions for chart
-        divisions = Division.objects.filter(is_deleted=False)
-
-    elif role == "Reviewer":
-        # Get divisions assigned to Reviewer via DepartmentProfile
-        division_ids = DepartmentProfile.objects.filter(
-            user=loggedInUser,
-            role__name="Reviewer",
-            is_deleted=False
-        ).values_list('division_id', flat=True).distinct()
-
-        metrics['total_departments'] = Department.objects.filter(
-            division_id__in=division_ids, is_deleted=False
-        ).count()
-
-        metrics['total_incidents'] = Incident.objects.filter(
-            division_id__in=division_ids, is_deleted=False
-        ).count()
-
-        metrics['notifications'] = Incident.objects.filter(
-            status__name="Under Transfer", assigned_to=loggedInUser, is_deleted=False
-        )
-
-        divisions = Division.objects.filter(id__in=division_ids, is_deleted=False)
-
-    elif role == "Responder":
-        # Get responder's department(s) only
-        department_ids = DepartmentProfile.objects.filter(
-            user=loggedInUser,
-            role__name="Responder",
-            is_deleted=False
-        ).values_list('department_id', flat=True).distinct()
-
-        # Responder's total incidents in their department(s)
-        metrics['total_incidents'] = Incident.objects.filter(
-            department_id__in=department_ids,
-            is_deleted=False
-        ).count()
-
-        # Notifications for responder excluding closed incidents
-        metrics['notifications'] = Incident.objects.filter(
-            assigned_to=loggedInUser,
-            is_deleted=False
-        ).exclude(status__name="Closed")
-
-        # For chart, get distinct divisions linked to responder's departments
-        division_ids = Department.objects.filter(id__in=department_ids, is_deleted=False).values_list('division_id', flat=True).distinct()
-        divisions = Division.objects.filter(id__in=division_ids, is_deleted=False)
-
-    else:
-        # Default empty data for unknown roles
-        metrics['total_incidents'] = 0
-        metrics['notifications'] = Incident.objects.none()
-        divisions = Division.objects.none()
-
-    # Prepare chart data: division-wise incident status counts
-    statuses = ['New', 'Under Review', 'Assigned', 'Resolved', 'Completed']
-    chart_divisions = [d.name for d in divisions]
-
-    status_data = {status: [0] * len(chart_divisions) for status in statuses}
-
-    for idx, division in enumerate(divisions):
-        for status in statuses:
-            count = Incident.objects.filter(
-                division=division,
-                status__name=status,
-                is_deleted=False
-            ).count()
-            status_data[status][idx] = count
-
-    # Chart colors per status
+    statuses = ['New', 'Assigned', 'In Progress', 'Under Transfer', 'Re Assigned', 'Completed', 'Closed']
     color_map = {
         'New': 'rgba(255, 99, 132, 0.7)',
-        'Under Review': 'rgba(255, 159, 64, 0.7)',
         'Assigned': 'rgba(255, 205, 86, 0.7)',
-        'Resolved': 'rgba(75, 192, 192, 0.7)',
+        'In Progress': 'rgba(153, 102, 255, 0.7)',
+        'Under Transfer': 'rgba(255, 159, 64, 0.7)',
+        'Re Assigned': 'rgba(255, 140, 203, 0.7)',
         'Completed': 'rgba(54, 162, 235, 0.7)',
+        'Closed': 'rgba(75, 192, 192, 0.7)',
     }
+    summary_data = {status: 0 for status in statuses}
+    chart_cards = []
 
-    datasets = [
-        {
-            'label': status,
-            'data': status_data[status],
-            'backgroundColor': color_map[status],
-            'stack': 'status'
-        }
-        for status in statuses
-    ]
+    assigned_to_user = Incident.objects.filter(assigned_to=loggedInUser, is_deleted=False)
+    user_dept_ids = assigned_to_user.exclude(department=None).values_list('department_id', flat=True)
 
-    chart_data = {
-        "divisions": chart_divisions,
-        "datasets": datasets
+    if role == "Admin":
+        all_incidents = Incident.objects.filter(is_deleted=False)
+        all_departments = Department.objects.filter(is_deleted=False)
+        all_dept_ids = set(all_departments.values_list('id', flat=True)) | set(user_dept_ids)
+        departments = Department.objects.filter(id__in=all_dept_ids)
+
+        metrics.update({
+            'total_users': CustomUserProfile.objects.filter(is_deleted=False).count(),
+            'total_incidents': all_incidents.count(),
+            'total_departments': len(all_dept_ids),
+            'total_divisions': Division.objects.filter(is_deleted=False).count(),
+            'notifications': Incident.objects.filter(
+                status__name="Re Assigned",
+                needs_admin_transfer=True,
+                is_deleted=False
+            )
+        })
+
+    elif role == "Reviewer":
+        division_ids = DepartmentProfile.objects.filter(
+            user=loggedInUser, role__name="Reviewer", is_deleted=False
+        ).values_list('division_id', flat=True).distinct()
+
+        dept_under_div = Department.objects.filter(division_id__in=division_ids, is_deleted=False)
+        dept_ids = set(dept_under_div.values_list('id', flat=True)) | set(user_dept_ids)
+        departments = Department.objects.filter(id__in=dept_ids)
+
+        metrics.update({
+            'total_departments': len(dept_ids),
+            'total_incidents': Incident.objects.filter(department_id__in=dept_ids, is_deleted=False).count(),
+            'notifications': Incident.objects.filter(status__name="Under Transfer", assigned_to=loggedInUser, is_deleted=False)
+        })
+
+    elif role == "Responder":
+        dept_ids = set(user_dept_ids)
+        departments = Department.objects.filter(id__in=dept_ids, is_deleted=False)
+
+        metrics.update({
+            'total_incidents': assigned_to_user.count(),
+            'notifications': assigned_to_user.exclude(status__name="Closed")
+        })
+
+    else:
+        departments = Department.objects.none()
+        metrics['total_incidents'] = 0
+        metrics['notifications'] = Incident.objects.none()
+
+    for dept in departments:
+        labels = [dept.name]
+        status_data = {status: [] for status in statuses}
+
+        for status in statuses:
+
+            user_ids_in_dept = assigned_to_user.filter(department=dept).values_list('id', flat=True)
+            dept_count = Incident.objects.filter(department=dept, status__name=status, is_deleted=False).exclude(id__in=user_ids_in_dept).count()
+            user_count = assigned_to_user.filter(department=dept, status__name=status).count()
+            total = dept_count + user_count
+
+            status_data[status].append(total)
+            summary_data[status] += total
+
+        chart_cards.append({
+            'title': f"📊 {dept.name}",
+            'labels': labels,
+            'datasets': [
+                {
+                    'label': status,
+                    'data': status_data[status],
+                    'backgroundColor': color_map[status],
+                    'stack': 'status'
+                } for status in statuses
+            ]
+        })
+
+
+    orphan_incidents = assigned_to_user.filter(department=None)
+    if orphan_incidents.exists():
+        labels = ['Assigned (No Dept)']
+        status_data = {status: [] for status in statuses}
+        for status in statuses:
+            count = orphan_incidents.filter(status__name=status).count()
+            status_data[status].append(count)
+            summary_data[status] += count
+
+        chart_cards.append({
+            'title': "📊 Assigned to Me (No Department)",
+            'labels': labels,
+            'datasets': [
+                {
+                    'label': status,
+                    'data': status_data[status],
+                    'backgroundColor': color_map[status],
+                    'stack': 'status'
+                } for status in statuses
+            ]
+        })
+
+    status_summary = {
+        'labels': list(summary_data.keys()),
+        'data': list(summary_data.values()),
+        'colors': [color_map[status] for status in summary_data]
     }
 
     context = {
         "metrics": metrics,
         "role": role,
-        "chart_data": chart_data
+        "chart_cards": chart_cards,
+        "status_summary": status_summary
     }
 
     return render(request, "dashboard/dashboard.html", context)
+
+
 
 
 
@@ -646,6 +685,14 @@ def ajax_update_incident_status(request):
             )
             send_incident_notification_email(reviewer_profile.user.email, subject, message)
 
+            Notification.objects.create(
+                recipient=reviewer_profile.user,
+                message=f"You have been assigned to incident {incident.incident_token}.",
+                incident=incident,
+                redirect_url=f"get-incident-by-token"
+            )
+        
+
         return JsonResponse({"success": True, "message": "Transfer initiated successfully."})
 
 
@@ -688,7 +735,7 @@ def ajax_update_incident_status(request):
                                     f"""
                         Dear {admin_user.fullname},
 
-                        A cross-division reassignment request has been made by Reviewer: {request.user.get_full_name()}.
+                        A cross-division reassignment request has been made by Reviewer: {request.user.fullname}.
 
                         Incident: {incident.incident_token}
                         Current Division: {incident.division.name}
@@ -701,6 +748,12 @@ def ajax_update_incident_status(request):
                         Incident Management System
 
                         """)
+                    Notification.objects.create(
+                        recipient=admin_user,
+                        message=f"Incident {incident.incident_token} requires your approval for cross-division reassignment.",
+                        incident=incident,
+                        redirect_url=f"get-incident-by-token"
+                    )
 
 
             return JsonResponse({
@@ -767,6 +820,12 @@ def ajax_update_incident_status(request):
                 f"[Incident Assignment] {incident.incident_token}",
                 f"You have been assigned to incident {incident.incident_token}.\n\nDivision: {to_division.name}\nDepartment: {to_department.name if to_department else 'N/A'}\nPlease take appropriate action."
             )
+            Notification.objects.create(
+                recipient=assigned_user,
+                message=f"You have been assigned to incident {incident.incident_token}.\n\nDivision: {to_division.name}\nDepartment: {to_department.name if to_department else 'N/A'}\n \t Please take appropriate action.",
+                incident=incident,
+                redirect_url=f"get-incident-by-token"
+            )
         return JsonResponse({"success": True, "message": "Reassignment successful."})
 
 
@@ -778,11 +837,40 @@ def ajax_update_incident_status(request):
                 f"[Incident Status Updated] {incident.incident_token}",
                 f"The status of incident {incident.incident_token} has been updated to '{updated_status.name}' by {request.user.fullname}."
             )
+            Notification.objects.create(
+                recipient=incident.assigned_to,
+                message=f"The status of incident {incident.incident_token} has been updated to '{updated_status.name}' by {request.user.fullname}.",
+                incident=incident,
+                redirect_url=f"get-incident-by-token"
+            )
         return JsonResponse({"success": True, "message": "Status updated successfully."})
 
 
 
 
+
+@login_required
+@role_level_required(3)
+@audit_trail_decorator
+def notification_list_view(request):
+    notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    return render(request, 'notificationList.html', {'notifications': notifications})
+
+@login_required
+def open_notification(request, notif_id):
+    notif = get_object_or_404(Notification, id=notif_id, recipient=request.user)
+    notif.is_read = True
+    notif.save()
+
+    try:
+        if notif.redirect_url == "get-incident-by-token" and notif.incident:
+            redirect_to = reverse("get-incident-by-token", kwargs={"token": notif.incident.incident_token})
+        else:
+            redirect_to = reverse("notification_list")  
+    except NoReverseMatch:
+        redirect_to = reverse("notification_list")
+
+    return redirect(redirect_to)
 
 
 
@@ -939,10 +1027,3 @@ def send_incident_notification_email(to_email, subject, message):
 @audit_trail_decorator
 def get_my_profile(request):
     return render(request,"profile.html")
-
-
-
-
-@login_required
-def view_notifications(request):
-    pass
