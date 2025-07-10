@@ -90,7 +90,6 @@ class IncidentAnswer(models.Model):
     
 
 
-
 class Notification(models.Model):
     recipient = models.ForeignKey(CustomUserProfile, on_delete=models.CASCADE, related_name="notifications")
     message = models.TextField()
